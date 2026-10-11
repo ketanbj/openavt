@@ -1,5 +1,6 @@
 include README.md LICENSE CHANGELOG.md .env.example uv.lock
 recursive-include docs *.md
+include docs/authority-verification.json
 recursive-include docs/performance *.json
 recursive-include tests *.py
 prune output

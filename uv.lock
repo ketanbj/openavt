@@ -1029,6 +1029,9 @@ audio = [
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
+authority = [
+    { name = "cryptography" },
+]
 webrtc = [
     { name = "aiortc" },
     { name = "av" },
@@ -1051,6 +1054,7 @@ dev = [
 requires-dist = [
     { name = "aiortc", marker = "extra == 'webrtc'", specifier = ">=1.15,<1.16" },
     { name = "av", marker = "extra == 'webrtc'", specifier = ">=14,<18" },
+    { name = "cryptography", marker = "extra == 'authority'", specifier = ">=46,<51" },
     { name = "numpy", marker = "extra == 'audio'", specifier = ">=2,<3" },
     { name = "openai", marker = "extra == 'agents'", specifier = ">=3.28,<4" },
     { name = "openavt", extras = ["audio"], marker = "extra == 'webrtc'" },
@@ -1058,7 +1062,7 @@ requires-dist = [
     { name = "python-dotenv", marker = "extra == 'webrtc'", specifier = ">=1.2,<2" },
     { name = "scipy", marker = "extra == 'audio'", specifier = ">=1.14,<2" },
 ]
-provides-extras = ["audio", "webrtc", "agents"]
+provides-extras = ["authority", "audio", "webrtc", "agents"]
 
 [package.metadata.requires-dev]
 dev = [

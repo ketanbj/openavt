@@ -19,7 +19,9 @@ def check_contents(names: list[str]) -> None:
             forbidden.intersection(path.parts)
             or any(part.startswith(".venv") for part in path.parts)
             or (path.name.startswith(".env.") and path.name != ".env.example")
-            or path.suffix in {".key", ".wav", ".pyc"}
+            or path.suffix in {".key", ".wav", ".pyc", ".sqlite3", ".sqlite3-journal"}
+            or ".sqlite3" in path.name
+            or path.name.endswith((".credentials.json", ".grant.json"))
         ):
             raise SystemExit(f"Unexpected local/private artifact in distribution: {name}")
     if not any(Path(name).name == "LICENSE" for name in names):
@@ -34,7 +36,7 @@ def check_metadata(raw: bytes) -> None:
         raise SystemExit("Distribution name/version does not match OpenAVT")
     if metadata["License-Expression"] != "Apache-2.0":
         raise SystemExit("Distribution license does not match Apache-2.0")
-    if set(metadata.get_all("Provides-Extra", [])) != {"audio", "webrtc", "agents"}:
+    if set(metadata.get_all("Provides-Extra", [])) != {"audio", "webrtc", "agents", "authority"}:
         raise SystemExit("Distribution is missing an optional integration extra")
     if "# OpenAVT" not in metadata.get_payload():
         raise SystemExit("Distribution README is missing the OpenAVT title")

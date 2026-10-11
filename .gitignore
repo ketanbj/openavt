@@ -12,3 +12,7 @@ dist/
 .ruff_cache/
 .DS_Store
 *.key
+*.sqlite3
+*.sqlite3-*
+*.credentials.json
+*.grant.json
