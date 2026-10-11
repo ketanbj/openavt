@@ -1,0 +1,208 @@
+"""Reliable framed audio carrying a normal OpenSSL TLS byte stream."""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import ssl
+import time
+from typing import Awaitable, Callable
+
+from openavt import protocol
+from openavt.modem import encode
+from openavt.tls import Endpoint
+
+
+class AudioTLS:
+    def __init__(
+        self, endpoint: Endpoint, send_audio: Callable[..., Awaitable], log: Callable, scenario: str = "valid"
+    ):
+        self.endpoint = endpoint
+        self.send_audio = send_audio
+        self.log = log
+        self.scenario = scenario
+        self.next_tx = 0
+        self.next_rx = 0
+        self.acks: dict[int, asyncio.Event] = {}
+        self.new_data = asyncio.Event()
+        self.ready = asyncio.Event()
+        self.flush_lock = asyncio.Lock()
+        self.messages: asyncio.Queue = asyncio.Queue()
+        self.pending_json = bytearray()
+        self.error: BaseException | None = None
+        self.started_at: float | None = None
+        self.ready_at: float | None = None
+        self.retries = 0
+        self.duplicates = 0
+        self.tls_bytes_rx = 0
+        self.tls_bytes_tx = 0
+        self.corrupted = False
+        self.dropped_ack = False
+        self.ack_tasks: set[asyncio.Task] = set()
+        self.stats = {"data_frames_rx": 0, "ack_frames_rx": 0, "messages_rx": 0}
+
+    def receive_frame(self, sequence: int, kind: int, payload: bytes) -> None:
+        if kind == protocol.ACK:
+            self.stats["ack_frames_rx"] += 1
+            if sequence in self.acks:
+                self.acks[sequence].set()
+            return
+        self.stats["data_frames_rx"] += 1
+        notify = False
+        if sequence == self.next_rx:
+            if self.started_at is None:
+                self.started_at = time.monotonic()
+            self.endpoint.incoming.write(payload)
+            self.tls_bytes_rx += len(payload)
+            self.next_rx += 1
+            notify = True
+        elif sequence == self.next_rx - 1:
+            self.duplicates += 1
+        else:
+            return
+        task = asyncio.create_task(self._ack(sequence, notify))
+        self.ack_tasks.add(task)
+        task.add_done_callback(self.ack_tasks.discard)
+
+    async def _ack(self, sequence: int, notify: bool) -> None:
+        try:
+            if self.scenario == "loss" and self.endpoint.name == "desk" and not self.dropped_ack:
+                self.dropped_ack = True
+                self.log("audio_ack_dropped", sequence=sequence)
+                return
+            await self.send_audio(encode(protocol.frame(sequence, protocol.ACK)), "modem")
+        finally:
+            # An ACK must be scheduled ahead of a TLS response flight; otherwise
+            # the sender can time out while that flight occupies the audio track.
+            if notify:
+                self.new_data.set()
+
+    async def _send_frame(self, payload: bytes) -> None:
+        sequence = self.next_tx
+        event = self.acks[sequence] = asyncio.Event()
+        raw = protocol.frame(sequence, protocol.DATA, payload)
+        try:
+            for attempt in range(4):
+                audio = encode(raw)
+                if self.scenario == "loss" and self.endpoint.name == "agent" and not self.corrupted:
+                    self.corrupted = True
+                    start = (len(protocol.PREAMBLE) + protocol.HEADER.size) * 8 * protocol.SAMPLES_PER_BIT
+                    bit = (raw[len(protocol.PREAMBLE) + protocol.HEADER.size] >> 7) & 1
+                    audio[start : start + protocol.SAMPLES_PER_BIT] = protocol.TONES[1 - bit]
+                    self.log("audio_waveform_corrupted", sequence=sequence)
+                self.log("audio_frame_tx", sequence=sequence, attempt=attempt, payload_bytes=len(payload))
+                await self.send_audio(audio, "modem")
+                try:
+                    await asyncio.wait_for(event.wait(), timeout=3.5)
+                    self.next_tx += 1
+                    self.tls_bytes_tx += len(payload)
+                    return
+                except TimeoutError:
+                    self.retries += 1
+                    self.log("audio_retry", sequence=sequence)
+            raise TimeoutError(f"audio frame {sequence} was not acknowledged")
+        finally:
+            self.acks.pop(sequence, None)
+
+    async def flush(self) -> None:
+        async with self.flush_lock:
+            while self.endpoint.outgoing.pending:
+                wire = self.endpoint.outgoing.read()
+                for start in range(0, len(wire), protocol.MAX_PAYLOAD):
+                    await self._send_frame(wire[start : start + protocol.MAX_PAYLOAD])
+
+    async def run(self, initiate: bool = False) -> None:
+        try:
+            if initiate:
+                self.started_at = time.monotonic()
+                self.log("tls_handshake_started")
+            else:
+                await self.new_data.wait()
+                self.log("tls_handshake_started")
+            while True:
+                self.new_data.clear()
+                if not self.endpoint.ready:
+                    try:
+                        self.endpoint.tls.do_handshake()
+                        self.endpoint.ready = True
+                    except ssl.SSLWantReadError:
+                        pass
+                    await self.flush()
+                    if self.endpoint.ready:
+                        self.ready_at = time.monotonic()
+                        self.ready.set()
+                        self.log(
+                            "tls_authenticated",
+                            version=self.endpoint.tls.version(),
+                            handshake_seconds=round(self.ready_at - self.started_at, 3),
+                            peer=self.endpoint.tls.getpeercert().get("subjectAltName", ()),
+                        )
+                if self.endpoint.ready:
+                    while True:
+                        try:
+                            plaintext = self.endpoint.tls.read(16384)
+                        except ssl.SSLWantReadError:
+                            break
+                        if not plaintext:
+                            return
+                        self.pending_json.extend(plaintext)
+                        if len(self.pending_json) > 65536:
+                            raise ValueError("application message exceeds size limit")
+                        while b"\n" in self.pending_json:
+                            line, _, remainder = self.pending_json.partition(b"\n")
+                            self.pending_json = bytearray(remainder)
+                            message = json.loads(line)
+                            if not isinstance(message, dict):
+                                raise ValueError("application message must be an object")
+                            self.stats["messages_rx"] += 1
+                            self.log("protected_message_rx", message=message)
+                            await self.messages.put(message)
+                    await self.flush()
+                if not self.new_data.is_set():
+                    await self.new_data.wait()
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:
+            self.error = error
+            self.ready.set()
+            await self.messages.put(error)
+            self.log("tls_error", error_type=type(error).__name__, reason=str(error))
+
+    async def wait_ready(self) -> None:
+        await asyncio.wait_for(self.ready.wait(), timeout=150)
+        if self.error:
+            raise self.error
+
+    async def send_json(self, message: dict) -> None:
+        await self.wait_ready()
+        wire = json.dumps(message, separators=(",", ":")).encode() + b"\n"
+        if len(wire) > 65536:
+            raise ValueError("application message exceeds size limit")
+        while wire:
+            consumed = self.endpoint.tls.write(wire)
+            wire = wire[consumed:]
+            await self.flush()
+        self.log("protected_message_tx", message=message)
+
+    async def receive_json(self) -> dict:
+        message = await asyncio.wait_for(self.messages.get(), timeout=150)
+        if isinstance(message, BaseException):
+            raise message
+        return message
+
+    def summary(self) -> dict:
+        return {
+            **self.stats,
+            "tls_bytes_rx": self.tls_bytes_rx,
+            "tls_bytes_tx": self.tls_bytes_tx,
+            "retries": self.retries,
+            "duplicates_suppressed": self.duplicates,
+            "tls_version": self.endpoint.tls.version(),
+            "handshake_seconds": round(self.ready_at - self.started_at, 3) if self.ready_at else None,
+            "error": type(self.error).__name__ if self.error else None,
+        }
+
+    async def close(self) -> None:
+        for task in list(self.ack_tasks):
+            task.cancel()
+        await asyncio.gather(*self.ack_tasks, return_exceptions=True)
