@@ -39,6 +39,7 @@ Choose dependencies by use case:
 | `audio` | Streaming modem with NumPy and SciPy |
 | `webrtc` | Streaming modem and live WebRTC audio transport |
 | `agents` | WebRTC plus OpenAI LLM, transcription, and speech integration |
+| `authority` | Local Agent Voice Authority enrollment and customer delegation |
 
 After publication, installation will use `pip install 'openavt[agents]'`.
 
@@ -59,6 +60,13 @@ openavt live --transport-only --profile pcm
 
 # Two real OpenAI agents, using your configured key.
 openavt live --profile pcm
+
+# Enroll a key, issue customer consent, then test allowed and denied cases over audio.
+# Install with: uv sync --locked --extra webrtc --extra authority
+openavt delegation-demo
+
+# Include two actual OpenAI agents (install agents + authority extras).
+openavt delegation-demo --agents
 
 # A certified caller requests a mutation outside its read-only grant.
 openavt live --scenario scope
@@ -104,7 +112,8 @@ src/openavt/
   channel.py          Reliable audio framing around the TLS byte stream
   transports/webrtc.py  Live audio-only WebRTC transport
   agents/openai.py    Independent OpenAI agent contexts, ASR and TTS
-  demos/              Loopback, live call, fixed fixture policy
+  authority/          Local AVA service/client, enrollment, signed business consent
+  demos/              Loopback, live call, delegation demo, fixed fixture policy
   cli.py              Installed command-line entry point
 tests/                Streaming, policy, cryptographic and CLI checks
 docs/                 Architecture, measurements, release instructions
@@ -113,6 +122,29 @@ docs/                 Architecture, measurements, release instructions
 The core modules never import demos or OpenAI. Optional integrations are loaded
 only when requested. The 0.x library API is experimental; see
 [architecture and library usage](docs/architecture.md).
+
+## Agent Voice Authority and customer consent
+
+The optional **AVA (Agent Voice Authority)** service offers self-service account
+registration, CSR enrollment with a signed one-time key challenge, 24-hour client
+certificates, renewal, and owner-authenticated revocation. Agents keep their
+private keys locally and explicitly pin the authority root. This is an
+ACME-inspired local prototype, not an ACME-compatible or publicly trusted CA.
+Certificates assert pseudonymous account/key control; they do not verify a
+person, organization, agent provider, or LLM implementation.
+
+A separate business signer authenticates operator-provisioned demo customer
+credentials and issues short-lived consent bound to an agent certificate,
+customer, recipient business, action and resource. The backend checks fresh audio
+TLS challenges, revocation and persistent single-use grants before releasing a
+protected result. The demo accepts valid consent and rejects seven misuse cases,
+including expired consent, another customer's grant, scope escalation and replay.
+
+See [AVA setup, enrollment and consent](docs/authority.md), including the CIA
+trust boundaries and deployment limits. `delegation-demo` generates temporary
+private state; the independently runnable `ava` CLI supports persistent local
+services. Authority operations travel over local HTTP or HTTPS; the demonstration's
+authoritative business requests travel over audio TLS.
 
 ## Verification
 
@@ -145,7 +177,8 @@ WebRTC transport without spending OpenAI API credits.
 
 The live demo connects two peers in one process on the same machine. Public
 Internet, microphone, telephone carrier, clock drift, FEC, overlapping speech and
-tones, and production CA issuance/revocation are not implemented. Only PCMU has
+tones, and production CA operation are not implemented. Local prototype issuance and
+application-level revocation are available through AVA. Only PCMU has
 been verified; Opus remains experimental. Certificates and grants are fixtures,
 not a customer consent or delegation system. CRC detects link errors; it does
 not authenticate them. The tests do not constitute a production security audit.

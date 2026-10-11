@@ -16,6 +16,8 @@ from openavt import __version__
         (["--help"], "loopback"),
         (["loopback", "--help"], "--scenario"),
         (["live", "--help"], "--env-file"),
+        (["ava", "--help"], "enroll"),
+        (["delegation-demo", "--help"], "--agents"),
     ],
 )
 def test_installed_module_cli(arguments, expected):

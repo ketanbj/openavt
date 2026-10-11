@@ -1,5 +1,22 @@
 # OpenAVT verification results
 
+## Agent Voice Authority and customer delegation
+
+The local AVA prototype completed self-service account registration, CSR/key-proof
+enrollment, certificate renewal and business consent issuance over HTTP, followed
+by a real PCMU audio-only WebRTC call with two GPT-6.1 Sol agents. Their full mutual
+TLS handshake measured **0.623 s**. The backend accepted valid Alice consent and
+denied expired consent, another customer's grant, scope escalation, replay,
+revoked consent, another agent's token and a revoked certificate on the existing
+TLS session. All eight cases verified; no retransmissions or bad modem frames.
+
+The agents made five LLM calls, four TTS calls and three transcriptions. Customer
+credentials and delegation tokens were not included in model inputs; traces
+redact the token. Public [verification evidence](authority-verification.json)
+contains model counters, per-case results, TLS/modem/RTP metrics and capture
+hashes. [Authority documentation](authority.md) explains the pseudonymous agent
+identity, operator-provisioned customers and local operational limits.
+
 ## Fast digital G.711 profile
 
 The `perf` branch adds opt-in `--profile pcm`, using 56 kbps raw modem data in

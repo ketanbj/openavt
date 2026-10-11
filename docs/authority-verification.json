@@ -1,0 +1,381 @@
+{
+  "scope": "Local AVA enrollment and operator-provisioned customer consent; live audio-only WebRTC requests; no public identity proofing",
+  "environment": {
+    "os": "Darwin",
+    "arch": "arm64",
+    "python": "3.13.10",
+    "openssl": "OpenSSL 3.6.3 9 Jun 2026"
+  },
+  "openai_agents": {
+    "verified": true,
+    "mode": "openai_agents",
+    "profile": "pcm",
+    "identity_assurance": "pseudonymous agent; operator-provisioned demo customers",
+    "certificate_renewal_verified": true,
+    "handshake_wall_seconds": 0.623,
+    "llm_agents_executed": true,
+    "results": [
+      {
+        "scenario": "valid",
+        "result": "allowed",
+        "reason": "verified_customer_delegation",
+        "verified": true,
+        "protected_round_trip_seconds": 0.302
+      },
+      {
+        "scenario": "expired",
+        "result": "denied",
+        "reason": "delegation_expired_or_not_yet_valid",
+        "verified": true,
+        "protected_round_trip_seconds": 0.297
+      },
+      {
+        "scenario": "other_customer",
+        "result": "denied",
+        "reason": "wrong_customer",
+        "verified": true,
+        "protected_round_trip_seconds": 0.3
+      },
+      {
+        "scenario": "scope",
+        "result": "denied",
+        "reason": "outside_delegated_scope",
+        "verified": true,
+        "protected_round_trip_seconds": 0.299
+      },
+      {
+        "scenario": "replay",
+        "result": "denied",
+        "reason": "delegation_already_used",
+        "verified": true,
+        "protected_round_trip_seconds": 0.302
+      },
+      {
+        "scenario": "revoked_grant",
+        "result": "denied",
+        "reason": "delegation_revoked_or_unknown",
+        "verified": true,
+        "protected_round_trip_seconds": 0.303
+      },
+      {
+        "scenario": "wrong_key",
+        "result": "denied",
+        "reason": "wrong_agent_binding",
+        "verified": true,
+        "protected_round_trip_seconds": 0.298
+      },
+      {
+        "scenario": "revoked_certificate",
+        "result": "denied",
+        "reason": "certificate_revoked_or_unknown",
+        "verified": true,
+        "protected_round_trip_seconds": 0.297
+      }
+    ],
+    "tls": {
+      "agent": {
+        "data_frames_rx": 17,
+        "ack_frames_rx": 10,
+        "messages_rx": 16,
+        "tls_bytes_rx": 3234,
+        "tls_bytes_tx": 8836,
+        "retries": 0,
+        "duplicates_suppressed": 0,
+        "profile": "pcm",
+        "flights": [
+          {
+            "phase": "handshake",
+            "bytes": 517,
+            "delivery_seconds": 0.15993
+          },
+          {
+            "phase": "handshake",
+            "bytes": 1132,
+            "delivery_seconds": 0.241036
+          },
+          {
+            "phase": "application",
+            "bytes": 898,
+            "delivery_seconds": 0.201636
+          },
+          {
+            "phase": "application",
+            "bytes": 898,
+            "delivery_seconds": 0.198576
+          },
+          {
+            "phase": "application",
+            "bytes": 894,
+            "delivery_seconds": 0.200361
+          },
+          {
+            "phase": "application",
+            "bytes": 902,
+            "delivery_seconds": 0.200739
+          },
+          {
+            "phase": "application",
+            "bytes": 898,
+            "delivery_seconds": 0.201396
+          },
+          {
+            "phase": "application",
+            "bytes": 898,
+            "delivery_seconds": 0.200369
+          },
+          {
+            "phase": "application",
+            "bytes": 901,
+            "delivery_seconds": 0.200255
+          },
+          {
+            "phase": "application",
+            "bytes": 898,
+            "delivery_seconds": 0.198084
+          }
+        ],
+        "tls_handshake_cpu_seconds": 0.001417,
+        "session_reused": false,
+        "tls_version": "TLSv1.3",
+        "handshake_seconds": 0.622,
+        "error": null
+      },
+      "desk": {
+        "data_frames_rx": 10,
+        "ack_frames_rx": 17,
+        "messages_rx": 8,
+        "tls_bytes_rx": 8836,
+        "tls_bytes_tx": 3234,
+        "retries": 0,
+        "duplicates_suppressed": 0,
+        "profile": "pcm",
+        "flights": [
+          {
+            "phase": "handshake",
+            "bytes": 1341,
+            "delivery_seconds": 0.259623
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.085734
+          },
+          {
+            "phase": "application",
+            "bytes": 146,
+            "delivery_seconds": 0.095018
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.092724
+          },
+          {
+            "phase": "application",
+            "bytes": 133,
+            "delivery_seconds": 0.096818
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.095503
+          },
+          {
+            "phase": "application",
+            "bytes": 112,
+            "delivery_seconds": 0.096707
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.091865
+          },
+          {
+            "phase": "application",
+            "bytes": 121,
+            "delivery_seconds": 0.095144
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.098121
+          },
+          {
+            "phase": "application",
+            "bytes": 121,
+            "delivery_seconds": 0.097097
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.084998
+          },
+          {
+            "phase": "application",
+            "bytes": 127,
+            "delivery_seconds": 0.099009
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.087925
+          },
+          {
+            "phase": "application",
+            "bytes": 117,
+            "delivery_seconds": 0.095214
+          },
+          {
+            "phase": "application",
+            "bytes": 111,
+            "delivery_seconds": 0.094342
+          },
+          {
+            "phase": "application",
+            "bytes": 128,
+            "delivery_seconds": 0.096703
+          }
+        ],
+        "tls_handshake_cpu_seconds": 0.002401,
+        "session_reused": false,
+        "tls_version": "TLSv1.3",
+        "handshake_seconds": 0.48,
+        "error": null
+      }
+    },
+    "audio": {
+      "agent": {
+        "audio_packets_rx": 2506,
+        "audio_samples_rx": 400960,
+        "modem_good_frames": 27,
+        "modem_bad_frames": 0,
+        "preamble_acquisitions": 27
+      },
+      "desk": {
+        "audio_packets_rx": 2506,
+        "audio_samples_rx": 400960,
+        "modem_good_frames": 27,
+        "modem_bad_frames": 0,
+        "preamble_acquisitions": 27
+      }
+    },
+    "rtp_stats": {
+      "agent": [
+        {
+          "type": "outbound-rtp",
+          "kind": "audio",
+          "packetsSent": 2508,
+          "bytesSent": 401280
+        },
+        {
+          "type": "inbound-rtp",
+          "kind": "audio",
+          "packetsReceived": 2507,
+          "packetsLost": 0,
+          "jitter": 2
+        }
+      ],
+      "desk": [
+        {
+          "type": "outbound-rtp",
+          "kind": "audio",
+          "packetsSent": 2508,
+          "bytesSent": 401280
+        },
+        {
+          "type": "inbound-rtp",
+          "kind": "audio",
+          "packetsReceived": 2508,
+          "packetsLost": 0,
+          "jitter": 7
+        }
+      ]
+    },
+    "agents": {
+      "agent": {
+        "model": "gpt-6.1-sol",
+        "api_calls": {
+          "llm": 2,
+          "tts": 2,
+          "asr": 2
+        }
+      },
+      "desk": {
+        "model": "gpt-6.1-sol",
+        "api_calls": {
+          "llm": 3,
+          "tts": 2,
+          "asr": 1
+        }
+      }
+    },
+    "report_sha256": "d8560e12e7bf367fa13b206b85fea78b0c2bf6211352cd6e8e2011bd884d51ec",
+    "recording_sha256": "cea7929a03709c8baff1411281043eab108c9b3ea71bebe9d222c3fddbef3b59"
+  },
+  "installed_wheel": {
+    "verified": true,
+    "mode": "transport_only",
+    "handshake_wall_seconds": 0.582,
+    "certificate_renewal_verified": true,
+    "results": [
+      {
+        "scenario": "valid",
+        "result": "allowed",
+        "reason": "verified_customer_delegation",
+        "verified": true,
+        "protected_round_trip_seconds": 0.28
+      },
+      {
+        "scenario": "expired",
+        "result": "denied",
+        "reason": "delegation_expired_or_not_yet_valid",
+        "verified": true,
+        "protected_round_trip_seconds": 0.279
+      },
+      {
+        "scenario": "other_customer",
+        "result": "denied",
+        "reason": "wrong_customer",
+        "verified": true,
+        "protected_round_trip_seconds": 0.282
+      },
+      {
+        "scenario": "scope",
+        "result": "denied",
+        "reason": "outside_delegated_scope",
+        "verified": true,
+        "protected_round_trip_seconds": 0.28
+      },
+      {
+        "scenario": "replay",
+        "result": "denied",
+        "reason": "delegation_already_used",
+        "verified": true,
+        "protected_round_trip_seconds": 0.281
+      },
+      {
+        "scenario": "revoked_grant",
+        "result": "denied",
+        "reason": "delegation_revoked_or_unknown",
+        "verified": true,
+        "protected_round_trip_seconds": 0.28
+      },
+      {
+        "scenario": "wrong_key",
+        "result": "denied",
+        "reason": "wrong_agent_binding",
+        "verified": true,
+        "protected_round_trip_seconds": 0.28
+      },
+      {
+        "scenario": "revoked_certificate",
+        "result": "denied",
+        "reason": "certificate_revoked_or_unknown",
+        "verified": true,
+        "protected_round_trip_seconds": 0.275
+      }
+    ],
+    "installation": "fresh non-editable wheel environment; no OpenAI dependency installed"
+  },
+  "automated_tests_passed": 75
+}

@@ -44,6 +44,11 @@ def main() -> None:
         )
         assert missing.returncode == 2
         assert "pip install 'openavt[webrtc]'" in missing.stderr
+        missing_authority = subprocess.run(
+            [str(cli), "ava", "--help"], cwd=work, capture_output=True, text=True
+        )
+        assert missing_authority.returncode == 2
+        assert "pip install 'openavt[authority]'" in missing_authority.stderr
         subprocess.run([str(cli), "loopback", "--scenario", "valid"], cwd=work, check=True)
         report = json.loads((work / "output/valid/trace.json").read_text())
         assert report["tls_version"] == "TLSv1.3"

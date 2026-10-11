@@ -196,7 +196,12 @@ class AudioTLS:
                             if not isinstance(message, dict):
                                 raise ValueError("application message must be an object")
                             self.stats["messages_rx"] += 1
-                            self.log("protected_message_rx", message=message)
+                            self.log(
+                                "protected_message_rx",
+                                message={
+                                    k: "[redacted]" if k == "delegation" else v for k, v in message.items()
+                                },
+                            )
                             await self.messages.put(message)
                     await self.flush()
                 if not self.new_data.is_set():
@@ -223,7 +228,10 @@ class AudioTLS:
             consumed = self.endpoint.tls.write(wire)
             wire = wire[consumed:]
             await self.flush()
-        self.log("protected_message_tx", message=message)
+        self.log(
+            "protected_message_tx",
+            message={k: "[redacted]" if k == "delegation" else v for k, v in message.items()},
+        )
 
     async def receive_json(self) -> dict:
         message = await asyncio.wait_for(self.messages.get(), timeout=150)

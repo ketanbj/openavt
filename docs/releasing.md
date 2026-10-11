@@ -8,14 +8,14 @@ reservation. Confirm the name remains available before publishing.
 ## Review and build locally
 
 ```sh
-uv sync --locked --extra agents
-uv run --locked --extra agents pytest -q
-uv run --locked --extra agents ruff check src tests scripts
-uv run --locked --extra agents ruff format --check src tests scripts
-uv run --locked --extra agents python -m build
-uv run --locked --extra agents twine check --strict dist/*
-uv run --locked --extra agents python scripts/check_dist.py
-uv run --locked --extra agents python scripts/smoke_wheel.py
+uv sync --locked --extra agents --extra authority
+uv run --locked --extra agents --extra authority pytest -q
+uv run --locked --extra agents --extra authority ruff check src tests scripts
+uv run --locked --extra agents --extra authority ruff format --check src tests scripts
+uv run --locked --extra agents --extra authority python -m build
+uv run --locked --extra agents --extra authority twine check --strict dist/*
+uv run --locked --extra agents --extra authority python scripts/check_dist.py
+uv run --locked --extra agents --extra authority python scripts/smoke_wheel.py
 ```
 
 The build produces `dist/openavt-0.1.0.tar.gz` and
@@ -27,7 +27,7 @@ wheel and one source archive.
 `smoke_wheel.py` installs the core wheel into a fresh virtual environment, checks
 that optional integrations are absent, checks the missing-extra error, and
 completes a real mutual TLS WAV request from outside the checkout. CI also runs
-a live transport-only WebRTC call with the installed wheel; it never needs an
+live transport-only WebRTC and delegated-access calls with the installed wheel; it never needs an
 OpenAI key.
 
 ## GitHub repository

@@ -28,6 +28,7 @@ Repository = "https://github.com/ketanbj/openavt"
 Issues = "https://github.com/ketanbj/openavt/issues"
 
 [project.optional-dependencies]
+authority = ["cryptography>=46,<51"]
 audio = ["numpy>=2,<3", "scipy>=1.14,<2"]
 webrtc = ["openavt[audio]", "aiortc>=1.15,<1.16", "av>=14,<18", "python-dotenv>=1.2,<2"]
 agents = ["openavt[webrtc]", "openai>=3.28,<4"]

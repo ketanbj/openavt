@@ -60,7 +60,7 @@ TLS channel. The outer WebRTC transport independently uses SRTP.
 
 WebRTC SDP establishes the peers out of band but carries no inner TLS records or
 application messages. There is no data channel. Every inner TLS record passes
-through tone generation, audio RTP, audio decoding, frame validation, and
+through waveform generation, audio RTP, audio decoding, frame validation, and
 MemoryBIO. Recordings are evidence/listening artifacts, not the delivery path.
 
 The receiver assumes stable sample timing within a frame. It does not recover
@@ -89,3 +89,26 @@ This profile needs a digital path that preserves samples. It does not claim
 56 kbps through analog telephone audio, arbitrary VoIP processing, or Opus.
 The default FSK profile retains its previous framing and buffering settings.
 See [measured performance](performance.md) for the timing boundary and evidence.
+
+
+## Authority and delegation
+
+`authority/ca.py` implements local pseudonymous client-certificate enrollment.
+`authority/service.py` and `client.py` expose bounded JSON account/order/key-proof
+and consent APIs. These APIs operate outside the call, using HTTP on loopback or
+HTTPS with normal server verification. They are not ACME-compatible. Agent
+private keys never appear in API requests, and client roots are supplied out of band.
+
+`authority/delegation.py` holds a separate business Ed25519 signing key and pinned
+verification key. Operator-provisioned customer credentials and account-resource
+policy authorize five-minute maximum, single-use certificate-bound grants. The
+backend verifies issuer, audience, certificate, customer, scope, expiry and current
+revocation status, then atomically consumes a protected business challenge and
+grant in SQLite. Checks precede the fixed read-only response and run outside the LLM.
+
+The enrollment credential cannot authorize customer account access. The AVA root
+key is never a business consent signer. `demos/delegation.py` shows the full flow,
+including an established TLS session whose certificate is subsequently revoked:
+its next business request is denied by the application status check. Ordinary
+OpenSSL certificate validation alone does not consult this prototype's registry.
+See [authority operation and limits](authority.md).
