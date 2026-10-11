@@ -48,6 +48,25 @@ def bump_level(messages: list[str], labels: list[str]) -> str:
     return "patch"
 
 
+def changes_level(changes: list[tuple[str, list[dict]]]) -> str:
+    """Apply each PR's override to all of its commits, then take the largest bump."""
+    groups = {}
+    levels = []
+    for message, pulls in changes:
+        merged = [pr for pr in pulls if pr.get("merged_at") and pr["base"]["ref"] == "main"]
+        if not merged:
+            levels.append(bump_level([message], []))
+        for pr in merged:
+            if pr["number"] not in groups:
+                groups[pr["number"]] = (
+                    [pr["title"], pr.get("body") or ""],
+                    [label["name"] for label in pr["labels"]],
+                )
+            groups[pr["number"]][0].append(message)
+    levels.extend(bump_level(messages, labels) for messages, labels in groups.values())
+    return max(levels, key=LEVELS.get, default="patch")
+
+
 def select_version(tags: dict[str, str], sha: str, level: str) -> tuple[str, bool]:
     stable = {tag: tuple(map(int, VERSION.fullmatch(tag).groups())) for tag in tags if VERSION.fullmatch(tag)}
     matches = [tag for tag in stable if tags[tag] == sha]
@@ -97,7 +116,7 @@ def plan(dry_run: bool) -> None:
         subprocess.run(["git", "merge-base", "--is-ancestor", sha, "origin/main"], check=True)
         event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
         if os.environ["GITHUB_EVENT_NAME"] == "workflow_run":
-            runs = [event["workflow_run"]]
+            runs = [api(f"repos/{repository}/actions/runs/{event['workflow_run']['id']}")]
         else:
             runs = api(f"repos/{repository}/actions/workflows/ci.yml/runs?head_sha={sha}&per_page=100")[
                 "workflow_runs"
@@ -117,25 +136,13 @@ def plan(dry_run: bool) -> None:
             previous = api(f"repos/{repository}/releases/tags/{latest}", missing_ok=True)
             if previous is None or previous["draft"]:
                 raise ValueError(f"Finish publishing {latest} before releasing another commit")
-    levels = []
-    seen = set()
     revision = f"{latest}..{sha}" if latest else sha
-    for commit in command("git", "rev-list", "--first-parent", revision).splitlines():
+    changes = []
+    for commit in command("git", "rev-list", revision).splitlines():
         message = command("git", "show", "-s", "--format=%B", commit)
         pulls = api(f"repos/{repository}/commits/{commit}/pulls")
-        merged = [pr for pr in pulls if pr.get("merged_at") and pr["base"]["ref"] == "main"]
-        if not merged:
-            levels.append(bump_level([message], []))
-        for pr in merged:
-            if pr["number"] in seen:
-                continue
-            seen.add(pr["number"])
-            levels.append(
-                bump_level(
-                    [pr["title"], pr.get("body") or "", message], [label["name"] for label in pr["labels"]]
-                )
-            )
-    level = max(levels, key=LEVELS.get, default="patch")
+        changes.append((message, pulls))
+    level = changes_level(changes)
     version, reused = select_version(tags, sha, level)
     output(version=version, tag=f"v{version}", sha=sha, bump=level, reused=str(reused).lower())
 

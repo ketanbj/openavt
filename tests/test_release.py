@@ -37,6 +37,38 @@ def test_invalid_overrides_fail_closed(labels):
         release.bump_level([], labels)
 
 
+def pull(number, *, title="Improve transport", labels=()):
+    return {
+        "number": number,
+        "title": title,
+        "body": "",
+        "merged_at": "2026-10-11",
+        "base": {"ref": "main"},
+        "labels": [{"name": label} for label in labels],
+    }
+
+
+def test_inner_pr_commits_can_detect_features_and_breaking_changes():
+    pr = pull(1)
+    assert release.changes_level([("Merge PR", [pr]), ("feat(audio): add modem", [pr])]) == "minor"
+    assert release.changes_level([("Merge PR", [pr]), ("fix(audio)!: new frames", [pr])]) == "major"
+
+
+def test_pr_override_applies_to_all_its_commits():
+    pr = pull(1, labels=["release:patch"])
+    assert release.changes_level([("Merge PR", [pr]), ("feat!: internal change", [pr])]) == "patch"
+
+
+def test_largest_pending_pr_change_wins():
+    changes = [("fix: retries", [pull(1)]), ("feat: audio", [pull(2)]), ("feat!: framing", [pull(3)])]
+    assert release.changes_level(changes) == "major"
+    assert release.changes_level(changes[:2]) == "minor"
+
+
+def test_direct_main_commits_still_select_a_version():
+    assert release.changes_level([("feat: enrollment", []), ("docs: guide", [])]) == "minor"
+
+
 @pytest.mark.parametrize(
     ("tags", "level", "expected"),
     [
