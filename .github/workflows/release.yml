@@ -1,30 +1,68 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and test without creating tags or publishing
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
+concurrency:
+  group: openavt-release
+  queue: max
+
 jobs:
   build:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && (inputs.dry_run || github.ref == 'refs/heads/main')) ||
+      (vars.RELEASE_ENABLED == 'true' && github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      sha: ${{ steps.plan.outputs.sha }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.13'
+      - name: Select or reuse a semantic version
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ENABLED: ${{ vars.RELEASE_ENABLED }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = true ]; then
+            python scripts/release.py plan --dry-run
+          else
+            python scripts/release.py plan
+          fi
+      - name: Set build version and reproducible timestamps
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          echo "SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OPENAVT=$VERSION" >> "$GITHUB_ENV"
+          echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct HEAD)" >> "$GITHUB_ENV"
       - run: python -m pip install uv==0.8.17
       - run: uv sync --locked --extra webrtc --extra authority
-      - name: Match release tag to package version
-        run: |
-          uv run --locked --extra webrtc --extra authority python - <<'PY'
-          import os
-          from openavt import __version__
-          assert os.environ['GITHUB_REF_NAME'] == f'v{__version__}', 'Tag/version mismatch'
-          PY
       - run: uv run --locked --extra webrtc --extra authority ruff check src tests scripts
       - run: uv run --locked --extra webrtc --extra authority ruff format --check src tests scripts
       - run: uv run --locked --extra webrtc --extra authority pytest -q
@@ -38,40 +76,65 @@ jobs:
           OPENAVT_ROOT="$PWD"
           OPENAVT_SMOKE=$(mktemp -d)
           cd "$OPENAVT_SMOKE"
-          "$OPENAVT_ROOT/.venv/bin/openavt" live --transport-only --output call
+          "$OPENAVT_ROOT/.venv/bin/openavt" live --transport-only --profile pcm --output call
           "$OPENAVT_ROOT/.venv/bin/openavt" delegation-demo --output delegation-call
+      - name: Record release evidence
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+          BUMP: ${{ steps.plan.outputs.bump }}
+          SHA: ${{ steps.plan.outputs.sha }}
+        run: |
+          echo "### OpenAVT $VERSION ($BUMP)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Source: $SHA. Wheel, source archive, core TLS and live audio demos verified." >> "$GITHUB_STEP_SUMMARY"
+          sha256sum dist/* >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: distributions
           path: dist/*
+          if-no-files-found: error
 
   publish:
     needs: build
+    if: >-
+      vars.RELEASE_ENABLED == 'true' &&
+      (github.event_name == 'workflow_run' || !inputs.dry_run)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: pypi
       url: https://pypi.org/project/openavt/
     permissions:
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: distributions
-          path: dist/
-      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
-
-  github-assets:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
       contents: write
+      id-token: write
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+      SHA: ${{ needs.build.outputs.sha }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OPENAVT: ${{ needs.build.outputs.version }}
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.build.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: distributions
           path: dist/
-      - name: Attach distributions to the GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: gh release upload "$GITHUB_REF_NAME" dist/*
+      - name: Stage draft GitHub release and recover identical artifacts on retry
+        run: python scripts/release.py stage "$VERSION" "$SHA"
+      - name: Validate staged archives and existing PyPI hashes
+        run: |
+          python -m pip install --no-deps dist/*.whl
+          python scripts/check_dist.py
+          python scripts/release.py verify-pypi "$VERSION"
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
+        with:
+          skip-existing: true # Only after verifying existing files have identical SHA-256 hashes.
+      - name: Verify publication and publish GitHub release
+        run: |
+          python scripts/release.py verify-pypi "$VERSION" --complete
+          gh release edit "v$VERSION" --draft=false

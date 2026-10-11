@@ -16,3 +16,4 @@ dist/
 *.sqlite3-*
 *.credentials.json
 *.grant.json
+src/openavt/_version.py

@@ -2,6 +2,9 @@
 
 ## 0.1.0 — unreleased
 
+- Add CI-gated automatic GitHub/PyPI releases, semantic version selection,
+  dry-run validation, and immutable artifact recovery through Trusted Publishing.
+
 - Add the optional `authority` extra and `openavt ava` local service/client:
   accounts, CSR/key-proof enrollment, renewal and authenticated revocation.
 - Add a separate business consent signer with certificate-bound, short-lived,
