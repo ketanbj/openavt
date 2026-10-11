@@ -1,0 +1,121 @@
+{
+  "mode": "transport_only",
+  "profile": "pcm",
+  "codec": "PCMU",
+  "codec_payload_bitrate_bps": 64000,
+  "modem_raw_bitrate_bps": 56000,
+  "handshake_measurement": "client start to both authenticated, including final audio ACK; excludes call setup, PKI and speech",
+  "verified": true,
+  "handshake_wall_seconds": 0.621,
+  "request_round_trip_seconds": 0.198,
+  "tls": {
+    "agent": {
+      "data_frames_rx": 2,
+      "ack_frames_rx": 3,
+      "messages_rx": 1,
+      "tls_bytes_rx": 1475,
+      "tls_bytes_tx": 1721,
+      "retries": 0,
+      "duplicates_suppressed": 0,
+      "profile": "pcm",
+      "flights": [
+        {
+          "phase": "handshake",
+          "bytes": 517,
+          "delivery_seconds": 0.160427
+        },
+        {
+          "phase": "handshake",
+          "bytes": 1088,
+          "delivery_seconds": 0.239402
+        },
+        {
+          "phase": "application",
+          "bytes": 116,
+          "delivery_seconds": 0.099697
+        }
+      ],
+      "tls_handshake_cpu_seconds": 0.002281,
+      "session_reused": false,
+      "tls_version": "TLSv1.3",
+      "handshake_seconds": 0.621,
+      "error": null
+    },
+    "desk": {
+      "data_frames_rx": 3,
+      "ack_frames_rx": 2,
+      "messages_rx": 1,
+      "tls_bytes_rx": 1721,
+      "tls_bytes_tx": 1475,
+      "retries": 0,
+      "duplicates_suppressed": 0,
+      "profile": "pcm",
+      "flights": [
+        {
+          "phase": "handshake",
+          "bytes": 1337,
+          "delivery_seconds": 0.259099
+        },
+        {
+          "phase": "application",
+          "bytes": 138,
+          "delivery_seconds": 0.098268
+        }
+      ],
+      "tls_handshake_cpu_seconds": 0.001805,
+      "session_reused": false,
+      "tls_version": "TLSv1.3",
+      "handshake_seconds": 0.481,
+      "error": null
+    }
+  },
+  "audio": {
+    "agent": {
+      "audio_packets_rx": 55,
+      "audio_samples_rx": 8800,
+      "modem_good_frames": 5,
+      "modem_bad_frames": 0,
+      "preamble_acquisitions": 5
+    },
+    "desk": {
+      "audio_packets_rx": 56,
+      "audio_samples_rx": 8960,
+      "modem_good_frames": 5,
+      "modem_bad_frames": 0,
+      "preamble_acquisitions": 5
+    }
+  },
+  "rtp_stats": {
+    "agent": [
+      {
+        "type": "outbound-rtp",
+        "kind": "audio",
+        "packetsSent": 57,
+        "bytesSent": 9120
+      },
+      {
+        "type": "inbound-rtp",
+        "kind": "audio",
+        "packetsReceived": 56,
+        "packetsLost": 0,
+        "jitter": 5
+      }
+    ],
+    "desk": [
+      {
+        "type": "outbound-rtp",
+        "kind": "audio",
+        "packetsSent": 56,
+        "bytesSent": 8960
+      },
+      {
+        "type": "inbound-rtp",
+        "kind": "audio",
+        "packetsReceived": 57,
+        "packetsLost": 0,
+        "jitter": 6
+      }
+    ]
+  },
+  "installation": "non-editable wheel in a fresh virtual environment; import confirmed from site-packages"
+}

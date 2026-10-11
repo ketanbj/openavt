@@ -46,8 +46,14 @@ jobs:
           OPENAVT_SMOKE=$(mktemp -d)
           cd "$OPENAVT_SMOKE"
           "$OPENAVT_ROOT/.venv/bin/openavt" live --transport-only --output call
+          "$OPENAVT_ROOT/.venv/bin/openavt" live --transport-only --profile pcm --output pcm-call
+      - name: Measure five fresh PCM handshakes
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.13'
+        run: uv run --locked --extra webrtc python scripts/benchmark_handshake.py --runs 5 --profile pcm --output output/ci-perf --require-under-one-second
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.13'
         with:
           name: distributions
-          path: dist/*
+          path: |
+            dist/*
+            output/ci-perf/summary.json

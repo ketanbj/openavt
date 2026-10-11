@@ -15,8 +15,27 @@ from openavt.tls import Endpoint
 
 class AudioTLS:
     def __init__(
-        self, endpoint: Endpoint, send_audio: Callable[..., Awaitable], log: Callable, scenario: str = "valid"
+        self,
+        endpoint: Endpoint,
+        send_audio: Callable[..., Awaitable],
+        log: Callable,
+        scenario: str = "valid",
+        *,
+        profile: str = "voiceband",
     ):
+        if profile not in ("voiceband", "pcm"):
+            raise ValueError(f"unknown modem profile: {profile}")
+        self.profile = profile
+        self.encode = encode
+        self.max_payload = protocol.MAX_PAYLOAD
+        self.rate = protocol.RATE
+        if profile == "pcm":
+            from openavt import pcm
+
+            self.encode = pcm.encode
+            self.max_payload = pcm.MAX_PAYLOAD
+        self.flights = []
+        self.tls_cpu_seconds = 0.0
         self.endpoint = endpoint
         self.send_audio = send_audio
         self.log = log
@@ -70,7 +89,7 @@ class AudioTLS:
                 self.dropped_ack = True
                 self.log("audio_ack_dropped", sequence=sequence)
                 return
-            await self.send_audio(encode(protocol.frame(sequence, protocol.ACK)), "modem")
+            await self.send_audio(self.encode(protocol.frame(sequence, protocol.ACK)), "modem")
         finally:
             # An ACK must be scheduled ahead of a TLS response flight; otherwise
             # the sender can time out while that flight occupies the audio track.
@@ -83,17 +102,28 @@ class AudioTLS:
         raw = protocol.frame(sequence, protocol.DATA, payload)
         try:
             for attempt in range(4):
-                audio = encode(raw)
+                audio = self.encode(raw)
                 if self.scenario == "loss" and self.endpoint.name == "agent" and not self.corrupted:
                     self.corrupted = True
-                    start = (len(protocol.PREAMBLE) + protocol.HEADER.size) * 8 * protocol.SAMPLES_PER_BIT
-                    bit = (raw[len(protocol.PREAMBLE) + protocol.HEADER.size] >> 7) & 1
-                    audio[start : start + protocol.SAMPLES_PER_BIT] = protocol.TONES[1 - bit]
+                    if self.profile == "pcm":
+                        from openavt import pcm
+
+                        audio[len(pcm.PREFIX) + pcm._sample_count(pcm.HEADER_BYTES) + 5] = 0
+                    else:
+                        start = (len(protocol.PREAMBLE) + protocol.HEADER.size) * 8 * protocol.SAMPLES_PER_BIT
+                        bit = (raw[len(protocol.PREAMBLE) + protocol.HEADER.size] >> 7) & 1
+                        audio[start : start + protocol.SAMPLES_PER_BIT] = protocol.TONES[1 - bit]
                     self.log("audio_waveform_corrupted", sequence=sequence)
-                self.log("audio_frame_tx", sequence=sequence, attempt=attempt, payload_bytes=len(payload))
+                self.log(
+                    "audio_frame_tx",
+                    sequence=sequence,
+                    attempt=attempt,
+                    payload_bytes=len(payload),
+                    audio_seconds=round(len(audio) / self.rate, 6),
+                )
                 await self.send_audio(audio, "modem")
                 try:
-                    await asyncio.wait_for(event.wait(), timeout=3.5)
+                    await asyncio.wait_for(event.wait(), timeout=0.75 if self.profile == "pcm" else 3.5)
                     self.next_tx += 1
                     self.tls_bytes_tx += len(payload)
                     return
@@ -108,8 +138,16 @@ class AudioTLS:
         async with self.flush_lock:
             while self.endpoint.outgoing.pending:
                 wire = self.endpoint.outgoing.read()
-                for start in range(0, len(wire), protocol.MAX_PAYLOAD):
-                    await self._send_frame(wire[start : start + protocol.MAX_PAYLOAD])
+                flight = {
+                    "phase": "handshake" if self.ready_at is None else "application",
+                    "bytes": len(wire),
+                }
+                started = time.monotonic()
+                self.log("tls_flight", **flight)
+                for start in range(0, len(wire), self.max_payload):
+                    await self._send_frame(wire[start : start + self.max_payload])
+                flight["delivery_seconds"] = round(time.monotonic() - started, 6)
+                self.flights.append(flight)
 
     async def run(self, initiate: bool = False) -> None:
         try:
@@ -122,11 +160,14 @@ class AudioTLS:
             while True:
                 self.new_data.clear()
                 if not self.endpoint.ready:
+                    cpu_start = time.perf_counter()
                     try:
                         self.endpoint.tls.do_handshake()
                         self.endpoint.ready = True
                     except ssl.SSLWantReadError:
                         pass
+                    finally:
+                        self.tls_cpu_seconds += time.perf_counter() - cpu_start
                     await self.flush()
                     if self.endpoint.ready:
                         self.ready_at = time.monotonic()
@@ -197,6 +238,10 @@ class AudioTLS:
             "tls_bytes_tx": self.tls_bytes_tx,
             "retries": self.retries,
             "duplicates_suppressed": self.duplicates,
+            "profile": self.profile,
+            "flights": self.flights,
+            "tls_handshake_cpu_seconds": round(self.tls_cpu_seconds, 6),
+            "session_reused": self.endpoint.tls.session_reused,
             "tls_version": self.endpoint.tls.version(),
             "handshake_seconds": round(self.ready_at - self.started_at, 3) if self.ready_at else None,
             "error": type(self.error).__name__ if self.error else None,

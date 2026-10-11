@@ -1,0 +1,157 @@
+{
+  "source_revision": "0eae572c4eee092694608789b14378d1f7379cd8",
+  "command": ".venv/bin/python -m cProfile -o output/perf-baseline.prof -m openavt live --transport-only --output output/perf-baseline",
+  "profile": "voiceband",
+  "codec": "PCMU",
+  "handshake_seconds": 31.824,
+  "protected_round_trip_seconds": 3.214,
+  "verified": true,
+  "timing_boundary": "client start through both authenticated endpoints including final audio ACK; excludes call setup, PKI, speech",
+  "handshake_data_frames": [
+    {
+      "role": "agent",
+      "sequence": 0,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "agent",
+      "sequence": 1,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "agent",
+      "sequence": 2,
+      "attempt": 0,
+      "payload_bytes": 5
+    },
+    {
+      "role": "desk",
+      "sequence": 0,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "desk",
+      "sequence": 1,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "desk",
+      "sequence": 2,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "desk",
+      "sequence": 3,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "desk",
+      "sequence": 4,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "desk",
+      "sequence": 5,
+      "attempt": 0,
+      "payload_bytes": 55
+    },
+    {
+      "role": "agent",
+      "sequence": 3,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "agent",
+      "sequence": 4,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "agent",
+      "sequence": 5,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "agent",
+      "sequence": 6,
+      "attempt": 0,
+      "payload_bytes": 256
+    },
+    {
+      "role": "agent",
+      "sequence": 7,
+      "attempt": 0,
+      "payload_bytes": 65
+    }
+  ],
+  "profiler_functions": [
+    {
+      "function": "stdlib TLS handshake",
+      "calls": 15,
+      "cpu_cumulative_seconds": 0.005413876000000001
+    },
+    {
+      "function": "FSK waveform generation",
+      "calls": 33,
+      "cpu_cumulative_seconds": 0.039910123000000006
+    },
+    {
+      "function": "streaming FSK decoder",
+      "calls": 3528,
+      "cpu_cumulative_seconds": 1.4210061340000002
+    }
+  ],
+  "profiler_scope": "entire transport-only call; cumulative TLS timing includes inner TLS engine only; excludes outer WebRTC DTLS",
+  "tls": {
+    "agent": {
+      "data_frames_rx": 7,
+      "ack_frames_rx": 9,
+      "messages_rx": 1,
+      "tls_bytes_rx": 1473,
+      "tls_bytes_tx": 1722,
+      "retries": 0,
+      "duplicates_suppressed": 0,
+      "tls_version": "TLSv1.3",
+      "handshake_seconds": 31.823,
+      "error": null
+    },
+    "desk": {
+      "data_frames_rx": 9,
+      "ack_frames_rx": 7,
+      "messages_rx": 1,
+      "tls_bytes_rx": 1722,
+      "tls_bytes_tx": 1473,
+      "retries": 0,
+      "duplicates_suppressed": 0,
+      "tls_version": "TLSv1.3",
+      "handshake_seconds": 29.455,
+      "error": null
+    }
+  },
+  "audio": {
+    "agent": {
+      "audio_packets_rx": 1763,
+      "audio_samples_rx": 282080,
+      "modem_good_frames": 16,
+      "modem_bad_frames": 0,
+      "preamble_acquisitions": 16
+    },
+    "desk": {
+      "audio_packets_rx": 1764,
+      "audio_samples_rx": 282240,
+      "modem_good_frames": 16,
+      "modem_bad_frames": 0,
+      "preamble_acquisitions": 16
+    }
+  },
+  "report_sha256": "e3d4ab3aaeca9a660bc8dba37ab1ef62417d4b085a7879067ba835bfb1e1dcf9"
+}

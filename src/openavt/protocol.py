@@ -32,7 +32,7 @@ def frame(sequence: int, kind: int, payload: bytes = b"") -> bytes:
     return PREAMBLE + body + struct.pack("!I", zlib.crc32(body))
 
 
-def unframe(raw: bytes) -> tuple[int, int, bytes]:
+def unframe(raw: bytes, *, max_payload: int = MAX_PAYLOAD) -> tuple[int, int, bytes]:
     if not raw.startswith(PREAMBLE):
         raise FrameError("preamble mismatch")
     body = raw[len(PREAMBLE) : -4]
@@ -42,7 +42,7 @@ def unframe(raw: bytes) -> tuple[int, int, bytes]:
         raise FrameError("CRC mismatch")
     sequence, kind, length = HEADER.unpack(body[: HEADER.size])
     payload = body[HEADER.size :]
-    if length != len(payload) or length > MAX_PAYLOAD or kind not in (DATA, ACK):
+    if length != len(payload) or length > max_payload or kind not in (DATA, ACK):
         raise FrameError("invalid frame header")
     if kind == ACK and payload:
         raise FrameError("ACK contains payload")

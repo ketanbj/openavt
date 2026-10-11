@@ -41,18 +41,27 @@ class Trace:
         (self.output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
 
 
-async def run(output: Path, scenario: str, transport_only: bool, codec: str) -> dict:
+async def run(
+    output: Path, scenario: str, transport_only: bool, codec: str, profile: str = "voiceband"
+) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     if any(output.iterdir()):
         raise ValueError("output directory must be empty")
     trace = Trace(output)
-    call = AudioCall(output, trace.log, codec)
+    call = AudioCall(output, trace.log, codec, profile=profile)
     report = {
         "mode": "transport_only" if transport_only else "openai_agents",
         "scenario": scenario,
         "codec": codec,
+        "profile": profile,
+        "codec_payload_bitrate_bps": 64000 if codec == "PCMU" else None,
+        "modem_raw_bitrate_bps": 56000 if profile == "pcm" else 1000,
+        "jitter_prefetch_ms": 20 if profile == "pcm" else 80,
+        "handshake_measurement": "client start to both authenticated, including final audio ACK; excludes call setup, PKI and speech",
         "call_path": "two local WebRTC peers over live UDP/SRTP audio",
-        "inner_tls_path": "FSK tones in decoded RTP audio; no WebRTC data channel",
+        "inner_tls_path": "PCM modem in decoded RTP audio; no WebRTC data channel"
+        if profile == "pcm"
+        else "FSK tones in decoded RTP audio; no WebRTC data channel",
         "llm_agents_executed": False,
         "verified": False,
     }
@@ -67,7 +76,9 @@ async def run(output: Path, scenario: str, transport_only: bool, codec: str) -> 
             shutil.copyfile(certificates / "root.pem", output / "demo-root.pem")
             for endpoint in endpoints(certificates):
                 name = endpoint.name
-                session = AudioTLS(endpoint, call.outputs[name].send, partial(trace.log, name), scenario)
+                session = AudioTLS(
+                    endpoint, call.outputs[name].send, partial(trace.log, name), scenario, profile=profile
+                )
                 sessions[name] = session
                 call.inputs[name].on_frame = session.receive_frame
             await call.connect()
@@ -184,6 +195,12 @@ def main(argv: list[str] | None = None):
         help="test live audio TLS without claiming an OpenAI-agent run",
     )
     parser.add_argument("--scenario", choices=("valid", "scope", "loss", "untrusted"), default="valid")
+    parser.add_argument(
+        "--profile",
+        choices=("voiceband", "pcm"),
+        default="voiceband",
+        help="pcm: fast digital G.711 only; voiceband: conservative 1 kbps FSK",
+    )
     parser.add_argument("--codec", choices=("PCMU", "opus"), default="PCMU")
     parser.add_argument("--output", type=Path)
     parser.add_argument(
@@ -208,7 +225,8 @@ def main(argv: list[str] | None = None):
     try:
         result = asyncio.run(
             asyncio.wait_for(
-                run(output, options.scenario, options.transport_only, options.codec), timeout=240
+                run(output, options.scenario, options.transport_only, options.codec, options.profile),
+                timeout=240,
             )
         )
     except Exception as error:

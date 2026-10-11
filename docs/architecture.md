@@ -4,7 +4,7 @@
 Structured authoritative request / response
 OpenSSL mutual TLS 1.3 through MemoryBIO
 Reliable ordered byte stream: framing, sequence, CRC, audio ACK, retry
-Binary FSK: 1,000 / 2,000 Hz, 1,000 gross bits/s, 8 kHz PCM
+Audio modem: 1 kbps FSK, or 56 kbps digital G.711 PCM
 WAV loopback or live G.711/PCMU WebRTC audio
 ```
 
@@ -65,3 +65,27 @@ MemoryBIO. Recordings are evidence/listening artifacts, not the delivery path.
 
 The receiver assumes stable sample timing within a frame. It does not recover
 clock drift. Gross bitrate excludes headers, ACKs, retries, and turnaround gaps.
+
+## Fast digital PCM profile
+
+Use `AudioTLS(endpoint, send_audio, log, profile="pcm")` with
+`openavt.pcm.StreamDecoder` and an unchanged 8 kHz mono PCMU path.
+`AudioCall(..., profile="pcm")` wires this configuration for the demo.
+The PCM modem selects one of 128 exact mu-law reconstruction levels for each
+7-bit symbol. The native G.711 encoder and decoder preserve those sample values.
+A fixed 32-sample prefix acquires sample alignment, and the existing sequence,
+kind, bounded length and CRC frame format validates delivery. TLS still verifies
+certificates and authenticates the application records.
+
+The fast profile allows 4,096-byte frames, so each current TLS flight fits in one
+audio frame, and omits the 80 ms modem turnaround gap. Speech keeps its pause.
+The demo reduces aiortc's audio jitter prefetch from four 20 ms packets to one;
+this trades network jitter tolerance for latency on the measured local path.
+There is no public aiortc setting for this, so a guarded adapter accesses the
+1.15 jitter buffer and the dependency is constrained to `>=1.15,<1.16`.
+Incompatible layouts raise an error. Codec payloads and decoding remain native.
+
+This profile needs a digital path that preserves samples. It does not claim
+56 kbps through analog telephone audio, arbitrary VoIP processing, or Opus.
+The default FSK profile retains its previous framing and buffering settings.
+See [measured performance](performance.md) for the timing boundary and evidence.

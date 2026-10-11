@@ -1,0 +1,145 @@
+{
+  "mode": "openai_agents",
+  "profile": "pcm",
+  "codec": "PCMU",
+  "codec_payload_bitrate_bps": 64000,
+  "modem_raw_bitrate_bps": 56000,
+  "jitter_prefetch_ms": 20,
+  "handshake_measurement": "client start to both authenticated, including final audio ACK; excludes call setup, PKI and speech",
+  "call_path": "two local WebRTC peers over live UDP/SRTP audio",
+  "inner_tls_path": "PCM modem in decoded RTP audio; no WebRTC data channel",
+  "llm_agents_executed": true,
+  "verified": true,
+  "handshake_wall_seconds": 0.585,
+  "request_round_trip_seconds": 2.937,
+  "call_wall_seconds": 48.725,
+  "tls": {
+    "agent": {
+      "data_frames_rx": 2,
+      "ack_frames_rx": 3,
+      "messages_rx": 1,
+      "tls_bytes_rx": 1475,
+      "tls_bytes_tx": 1723,
+      "retries": 0,
+      "duplicates_suppressed": 0,
+      "profile": "pcm",
+      "flights": [
+        {
+          "phase": "handshake",
+          "bytes": 517,
+          "delivery_seconds": 0.144768
+        },
+        {
+          "phase": "handshake",
+          "bytes": 1090,
+          "delivery_seconds": 0.222049
+        },
+        {
+          "phase": "application",
+          "bytes": 116,
+          "delivery_seconds": 0.07974
+        }
+      ],
+      "tls_handshake_cpu_seconds": 0.002939,
+      "session_reused": false,
+      "tls_version": "TLSv1.3",
+      "handshake_seconds": 0.584,
+      "error": null
+    },
+    "desk": {
+      "data_frames_rx": 3,
+      "ack_frames_rx": 2,
+      "messages_rx": 1,
+      "tls_bytes_rx": 1723,
+      "tls_bytes_tx": 1475,
+      "retries": 0,
+      "duplicates_suppressed": 0,
+      "profile": "pcm",
+      "flights": [
+        {
+          "phase": "handshake",
+          "bytes": 1337,
+          "delivery_seconds": 0.256399
+        },
+        {
+          "phase": "application",
+          "bytes": 138,
+          "delivery_seconds": 0.087797
+        }
+      ],
+      "tls_handshake_cpu_seconds": 0.002032,
+      "session_reused": false,
+      "tls_version": "TLSv1.3",
+      "handshake_seconds": 0.444,
+      "error": null
+    }
+  },
+  "audio": {
+    "agent": {
+      "audio_packets_rx": 2428,
+      "audio_samples_rx": 388480,
+      "modem_good_frames": 5,
+      "modem_bad_frames": 0,
+      "preamble_acquisitions": 5
+    },
+    "desk": {
+      "audio_packets_rx": 2428,
+      "audio_samples_rx": 388480,
+      "modem_good_frames": 5,
+      "modem_bad_frames": 0,
+      "preamble_acquisitions": 5
+    }
+  },
+  "rtp_stats": {
+    "agent": [
+      {
+        "type": "outbound-rtp",
+        "kind": "audio",
+        "packetsSent": 2429,
+        "bytesSent": 388640
+      },
+      {
+        "type": "inbound-rtp",
+        "kind": "audio",
+        "packetsReceived": 2429,
+        "packetsLost": 0,
+        "jitter": 3
+      }
+    ],
+    "desk": [
+      {
+        "type": "outbound-rtp",
+        "kind": "audio",
+        "packetsSent": 2429,
+        "bytesSent": 388640
+      },
+      {
+        "type": "inbound-rtp",
+        "kind": "audio",
+        "packetsReceived": 2429,
+        "packetsLost": 0,
+        "jitter": 2
+      }
+    ]
+  },
+  "agents": {
+    "agent": {
+      "model": "gpt-6.1-sol",
+      "api_calls": {
+        "llm": 2,
+        "tts": 2,
+        "asr": 2
+      }
+    },
+    "desk": {
+      "model": "gpt-6.1-sol",
+      "api_calls": {
+        "llm": 3,
+        "tts": 2,
+        "asr": 1
+      }
+    }
+  },
+  "report_sha256": "c18a6e9a0600199c0d888f18471804560418674e3a6bcbe141219fdf79ccdf0b",
+  "recording_sha256": "4414a20ab7c7927aca4f0898f6ae49cd72e15389bda921a7c5e2b1aadb7ecf7d"
+}
