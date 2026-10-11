@@ -1,123 +1,81 @@
-# Sub-second full mutual TLS over a 64 kbps audio channel
+# Sub-second TLS over audio
 
-The opt-in `pcm` profile reached the target on live local WebRTC audio:
+[README](../README.md) · [Quickstart](quickstart.md) · [Verification](verification.md)
 
-| Measurement | Handshake | Protected request/response |
-| --- | ---: | ---: |
-| Original 1 kbps FSK, profiled transport call | 31.824 s | 3.214 s |
-| PCM, 20 fresh calls, median | 0.621 s | 0.199 s |
-| PCM, 20 fresh calls, p95 / maximum handshake | 0.623 / 0.624 s | — |
-| PCM, two real GPT-6.1 Sol agents | 0.585 s | 2.937 s |
+**Five fresh calls on `main`: 0.561 s median, 0.581 s maximum.**
+Every call authenticated both peers and delivered a protected request/response.
 
-All 20 benchmark calls authenticated both peers, used no resumed TLS session,
-and delivered a verified protected request and response. They had zero link
-retries and zero bad modem frames. The agent run made five LLM requests, four
-TTS requests and three transcriptions across two independent agent contexts;
-its request/response includes desk transcription and LLM processing. Total
-agent-call time was 48.725 s, including ordinary speech and API calls.
+## Measured results
 
-## Profile first
+| Experiment | Full mTLS handshake | Evidence |
+| --- | ---: | --- |
+| `main` Linux CI, 5 fresh PCM calls, October 11, 2026 | **0.561 s median · 0.581 s max** | [JSON](performance/pcm-ci-main.json) · [CI run](https://github.com/ketanbj/openavt/actions/runs/38150046644) |
+| Two OpenAI agents, AVA enrollment and customer delegation | **0.623 s** | [JSON](authority-verification.json) |
+| Installed wheel, AVA demo without OpenAI | **0.582 s** | [JSON](authority-verification.json) |
+| Earlier macOS PCM benchmark, 20 fresh calls | 0.621 s median · 0.624 s max | [JSON](performance/pcm-20-calls.json) |
 
-The original implementation was measured with `cProfile` before changes.
-The stdlib TLS handshake calls consumed approximately **5.4 ms**, while the
-full handshake took **31.824 s**. The baseline generated fourteen DATA frames
-and fourteen audio ACKs. Approximately 2.94 KB of TLS handshake records plus
-frame overhead occupied **29.6 s** of 1 kbps modem audio. Crypto optimization
-could not remove that transmission time.
+The CI run used Linux x86_64, Python 3.13.16, OpenSSL 3.0.13, aiortc 1.15.0 and
+PyAV 17.1.0. All five calls had fresh P-256 certificates and TLS contexts,
+no session reuse, no retries and no bad modem frames. Environment details and
+per-call timings are in the JSON. The older 20-call run is a separate macOS sample.
 
-The changes address that bottleneck:
+## Reproduce
 
-- A digital PCM modem sends seven bits per 8 kHz sample, selecting one of 128
-  exact G.711 mu-law reconstruction levels: **56,000 raw modem bits/s**.
-- G.711 PCMU still sends eight bits per sample: **64,000 audio payload bits/s**,
-  excluding RTP/SRTP/UDP/IP headers. This is not a claim of 64 kbps application
-  throughput. The native codec remains in the delivery path.
-- A 4,096-byte frame limit lets each current TLS flight fit into one DATA frame.
-  The current full handshake needs three flights, roughly 517, 1,335, and 1,090
-  bytes; ECDSA signatures cause small size variations.
-- Modem transmission omits the previous 80 ms turnaround pause. Speech retains
-  its pause. Local audio jitter prefetch drops from 80 ms to 20 ms through a
-  guarded aiortc 1.15 adapter; the dependency is constrained to that minor release.
+From the checkout, run one live transport-only call:
 
-Three flights and three ACKs take approximately **0.49 s of audio** at this
-modem rate, including prefixes, frame headers, CRCs and trailing samples. The
-measured median of 0.621 s includes packet alignment, buffering, ACK delivery,
-and TLS computation. No certificate checks, encryption or mutual authentication
-were removed. Session tickets remain disabled in the demo, P-256 key exchange
-remains unchanged, and every measurement uses fresh TLS contexts and demo keys.
+```sh
+uv run --locked --extra webrtc openavt live --transport-only --profile pcm
+```
+
+Or measure five fresh calls and fail if any handshake reaches one second:
+
+```sh
+uv run --locked --extra webrtc python scripts/benchmark_handshake.py \
+  --runs 5 --profile pcm --output output/new-pcm-benchmark \
+  --require-under-one-second
+```
+
+Use a new output path each time. The benchmark saves reports, recordings and
+`summary.json`. Linux CI runs the same threshold check and uploads its summary.
+The [complete enrollment demo](quickstart.md#start-with-enrollment-and-delegation)
+also runs the fast PCM profile.
 
 ## Timing and scope
 
-The timer starts immediately before the client initiates inner TLS and ends
-when both endpoints have authenticated and the client's final flight has been
-acknowledged **over audio**. It excludes certificate generation, ICE/DTLS/SRTP
-call establishment, a 300 ms stream warmup, and preceding speech. This measures
-a cold inner TLS handshake on an established voice call, not total dialing time.
-TLS tickets, PSK resumption and 0-RTT are not used.
+The timer starts when the client initiates inner TLS and ends after **both peers
+authenticate and the final flight is acknowledged over audio**. It excludes
+certificate creation, ICE/DTLS/SRTP call setup, stream warmup and LLM/speech time.
+It measures TLS on an established call, rather than total dialing time.
 
-Both peers run in one process on the same machine, using real UDP/SRTP audio,
-native PCMU encoding/decoding, and receiver-side waveform reconstruction. SDP
-is the only out-of-band peer exchange. There is no data channel and no TLS byte
-delivery through recordings. The machine was macOS arm64, Python 3.13.10,
-OpenSSL 3.6.3, aiortc 1.15.0 and PyAV 17.1.0; the evidence records the environment.
+Both peers run on one machine using real UDP/SRTP and native G.711 PCMU audio.
+Every TLS record passes through the modem and receiver; there is no data channel.
+No TLS tickets, PSK resumption or 0-RTT are used.
 
-This is a **digital G.711 path** result. The modem requires exact reconstruction
-levels and stable sample timing; AGC, noise suppression, mixing, resampling,
-lossy transcoding, or microphone/speaker playback can destroy them. `--codec
-opus --profile pcm` is rejected. The lower prefetch also reduces tolerance for
-network jitter. Arbitrary Internet/PSTN calls, packet-loss concealment, larger
-certificate chains, and hybrid/post-quantum key exchanges have not met this
-target. Longer network RTTs or ARQ retries increase the measured handshake.
-Speech alternates with audible noise-like modem bursts; simultaneous speech
-is not supported. The default voice-band FSK profile remains available.
+The fast profile needs unchanged 8 kHz PCMU samples. Transcoding, gain control,
+noise suppression, mixing, resampling and analog playback can break it. Opus is
+rejected. Network RTT, jitter, loss and larger certificate chains increase time;
+these figures do not establish Internet, carrier/PSTN or microphone performance.
+Speech alternates with modem bursts; overlapping speech is unsupported.
 
-## Evidence and reproduction
+## Why it is faster
 
-Public evidence omits call transcripts, application identifiers, certificate
-files and credentials. SHA-256 hashes connect the summaries to the original
-local reports and recordings, which remain in ignored `output/` directories.
-They identify those artifacts; they are not independently verifiable call captures.
+The original 1 kbps FSK handshake took **31.824 s** while TLS computation used
+about **5.4 ms**: transmission was the bottleneck. [Baseline profile](performance/baseline.json).
 
-- [Baseline profile](performance/baseline.json): original revision, frame sizes,
-  profiler CPU measurements, handshake and transport results.
-- [20-call PCM benchmark](performance/pcm-20-calls.json): individual fresh-call
-  timings, per-flight deliveries, session reuse flags, modem counters, RTP stats
-  and aggregate median/p95/maximum.
-- [Two-agent result](performance/pcm-agents.json): model/API counters, timings,
-  protected workflow verification, TLS, modem and RTP statistics.
-- [Installed-wheel call](performance/pcm-wheel.json): a fresh environment with
-  the non-editable wheel completed mTLS in **0.621 s**, then the protected
-  request/response in **0.198 s**. Core wheel loopback, build metadata and archive
-  checks also passed. All **29 automated tests** passed locally.
+| Change | Effect |
+| --- | --- |
+| Seven modem bits per 8 kHz sample | 56 kbps raw data inside 64 kbps PCMU audio payload |
+| 4,096-byte frames | Each current TLS flight fits in one frame |
+| Remove the 80 ms modem turnaround pause | Shorter flight delivery |
+| Reduce jitter prefetch from 80 ms to 20 ms | Lower local latency, less jitter tolerance |
 
-From a checkout with the `webrtc` extra:
+The jitter adapter is guarded and limited to aiortc 1.15. Certificate validation,
+encryption and mutual authentication remain enabled. Headers, ACKs and retries
+reduce application throughput below the raw modem rate.
 
-```sh
-uv sync --locked --extra webrtc
-uv run --locked --extra webrtc openavt live --transport-only --profile pcm
-uv run --locked --extra webrtc python scripts/benchmark_handshake.py \
-  --runs 20 --profile pcm --output output/new-pcm-benchmark \
-  --require-under-one-second
-uv run --locked --extra webrtc pytest -q
-```
+Public summaries omit credentials and transcripts. Capture hashes identify local
+reports and WAVs, which are not public independent verification artifacts.
+Earlier [agent](performance/pcm-agents.json) and [wheel](performance/pcm-wheel.json)
+measurements remain available as historical evidence.
 
-The benchmark makes sequential calls with fresh CA keys, certificates, TLS
-contexts and WebRTC peers. It saves full local reports/audio plus a public
-summary, and the optional threshold fails if **any** measured handshake takes
-one second or more. Use a new output path for each invocation. Linux CI runs
-five calls with that threshold and uploads the summary alongside distributions.
-Functional tests cover real live success, denied scope, one damaged waveform
-plus one dropped audio ACK, untrusted client rejection, native codec preservation
-of all 128 levels, arbitrary sample boundaries, bounded frame sizes, corruption
-recovery, and TLS ciphertext tampering/replay despite valid frame CRCs.
-
-To run the real agents with a locally configured key:
-
-```sh
-uv sync --locked --extra agents
-uv run --locked --extra agents openavt live --profile pcm
-```
-
-References: [G.711 RTP encoding, RFC 3551 §4.5.14](https://www.rfc-editor.org/rfc/rfc3551.html#section-4.5.14),
-[TLS 1.3, RFC 8446](https://www.rfc-editor.org/rfc/rfc8446.html),
-and [architecture and trust boundary](architecture.md).
+[Architecture](architecture.md) · [G.711 RTP](https://www.rfc-editor.org/rfc/rfc3551.html#section-4.5.14)
