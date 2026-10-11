@@ -6,4 +6,8 @@ Optional integrations are imported explicitly so core imports need no third-part
 packages. The 0.x API is experimental.
 """
 
-__version__ = "0.1.0"
+try:
+    from ._version import __version__
+except ImportError:
+    # A source checkout before its first build has no generated version file.
+    __version__ = "0.1.0.dev0"
