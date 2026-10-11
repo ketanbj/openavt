@@ -1,104 +1,53 @@
-# OpenAVT verification results
+# Verification
 
-## Agent Voice Authority and customer delegation
+[README](../README.md) · [Performance](performance.md) · [Authority](authority.md)
 
-The local AVA prototype completed self-service account registration, CSR/key-proof
-enrollment, certificate renewal and business consent issuance over HTTP, followed
-by a real PCMU audio-only WebRTC call with two GPT-6.1 Sol agents. Their full mutual
-TLS handshake measured **0.623 s**. The backend accepted valid Alice consent and
-denied expired consent, another customer's grant, scope escalation, replay,
-revoked consent, another agent's token and a revoked certificate on the existing
-TLS session. All eight cases verified; no retransmissions or bad modem frames.
+**75 automated tests passed** on Linux/Python 3.11, Linux/Python 3.13 and
+macOS/Python 3.13 in the October 11, 2026
+[`main` CI run](https://github.com/ketanbj/openavt/actions/runs/38150046644).
 
-The agents made five LLM calls, four TTS calls and three transcriptions. Customer
-credentials and delegation tokens were not included in model inputs; traces
-redact the token. Public [verification evidence](authority-verification.json)
-contains model counters, per-case results, TLS/modem/RTP metrics and capture
-hashes. [Authority documentation](authority.md) explains the pseudonymous agent
-identity, operator-provisioned customers and local operational limits.
+## Evidence
 
-## Fast digital G.711 profile
+| Check | Result | Details |
+| --- | --- | --- |
+| Five fresh PCM audio calls in CI | All full mTLS handshakes below one second | [Timings and environment](performance/pcm-ci-main.json) |
+| Two OpenAI agents with AVA | 0.623 s handshake; all eight authorization cases verified | [Public report](authority-verification.json) |
+| Fresh installed wheel, AVA without OpenAI | 0.582 s handshake; all eight cases verified locally | [Public report](authority-verification.json) |
+| Package checks | Builds, strict metadata validation and clean core-wheel installation | [Release checks](releasing.md#validate) |
 
-The `perf` branch adds opt-in `--profile pcm`, using 56 kbps raw modem data in
-a 64 kbps PCMU audio stream. Twenty fresh local audio-only WebRTC calls measured
-a median **0.621 s** handshake, p95 **0.623 s**, and maximum **0.624 s**, all with
-verified protected requests, no session reuse, no retries and no bad frames.
-Two real GPT-6.1 Sol agents completed this profile with a **0.585 s** handshake
-and **2.937 s** protected request/response, including desk ASR and LLM time.
-The [performance report](performance.md) contains the timing boundary, digital
-G.711 requirements, public evidence, and reproduction commands. These results
-do not establish equivalent performance over analog or transcoded audio.
+CI also exercises the installed wheel over live WebRTC audio and runs the
+five-call handshake threshold. It needs no OpenAI key. The OpenAI demo is a
+separate opt-in local run using two independent GPT-6.1 Sol contexts.
 
-## Original voice-band FSK profile
+## What the tests cover
 
-The pre-packaging implementation completed real local WebRTC calls with two
-OpenAI GPT-6.1 Sol agents. Each had its own Responses context and tools, transcribed
-received RTP audio, and used synthesized speech. The codec was G.711/PCMU and the
-inner authenticated transport was OpenSSL mutual TLS 1.3 over audible FSK.
+- Streaming frame acquisition, chunk boundaries, corruption recovery and native PCMU preservation.
+- TLS certificate rejection, missing client certificates, ciphertext tampering and replay.
+- Audio retry and deduplication after a damaged waveform and dropped ACK.
+- Enrollment key proof, account isolation, renewal and explicit root trust.
+- Customer/resource permissions, grant signatures, scope, expiry and revocation.
+- Concurrent single-use enforcement and persistent replay state.
+- HTTP/CLI bounds, overload handling and sanitized transport failures.
+- Installed CLI, optional dependency errors and distribution contents.
 
-| Run | TLS handshake | Protected request/response | Outcome |
-| --- | ---: | ---: | --- |
-| Two-agent order inquiry | 32.164 s | 5.417 s | Allowed; order shipped |
-| Two-agent address change | 32.203 s | 5.217 s | Denied by read-only fixture grant |
+## Run locally
 
-Both runs had zero retransmissions and zero bad modem frames. Each made five LLM
-requests, four TTS requests, and three transcriptions across both agents. The
-request/response metric includes desk ASR and LLM time and ends upon receipt of
-the protected response, excluding the later spoken reply and goodbye.
+```sh
+uv run --locked --extra webrtc --extra authority pytest -q
+uv run --locked --extra webrtc --extra authority ruff check src tests scripts
+uv run --locked --extra webrtc --extra authority ruff format --check src tests scripts
+```
 
-Transport-only runs also verified recovery from one deliberately damaged
-waveform plus one dropped audio ACK (two retries, one duplicate suppressed), and
-rejection of an untrusted agent certificate before an application request was
-delivered. They did not invoke LLMs.
+Use the [quickstart](quickstart.md) for calls and [performance guide](performance.md#reproduce)
+for a fresh benchmark. Real OpenAI runs incur API usage.
 
-The original eight automated tests covered unknown sample offsets and chunk
-boundaries, noise/gain, corrupt-frame resynchronization, backend grants,
-ciphertext tampering despite a valid CRC, record replay, and missing client
-certificates. Packaging adds installed command-line and artifact checks. CI
-uses no OpenAI key; new live OpenAI runs are opt-in and incur API usage.
+## Interpretation
 
-Measurements used an ephemeral P-256 demo CA and P-256 key exchange on this
-machine. Different chain sizes, codecs, sample clocks, networks, and key-exchange
-groups may change both performance and reliability. This is not a PSTN or
-production-security verification.
+Live demos use two local peers and a digital PCMU path. Timing conditions are
+defined in [performance](performance.md#timing-and-scope). These tests establish
+the measured prototype behavior; they are not a production security audit or
+verification of Internet/PSTN interoperability.
 
-Original reports and recordings remain in the local ignored `output/` directory.
-They are intentionally not included in PyPI distributions or the public source
-repository. This document summarizes the measured values without exposing
-credentials or call transcripts.
-
-## Packaged-wheel verification
-
-The reorganized v0.1.0 wheel was installed with its `agents` extra into a fresh
-virtual environment and run from outside the checkout, with the working-directory
-configuration passed explicitly through `--env-file`. Both real GPT-6.1 Sol
-agents completed the audio call: a **32.466 s** mutual TLS handshake and a
-**6.016 s** protected order-status request/response, with zero retries and zero
-bad modem frames. The wheel's transport-only loss scenario also passed with two
-retries and one duplicate suppressed. Local evidence is in
-`output/package-agents/` and `output/package-recovery/`.
-
-All **13 tests** passed, Ruff lint/format checks passed, both workflows passed
-`actionlint`, and the core wheel completed a mutual TLS loopback in a clean
-environment with no optional pip dependencies. Wheel/source metadata passed
-`twine check --strict`; archive contents exclude local/private run artifacts.
-GitHub's Linux/macOS matrix runs on source pushes; PyPI publication uses the
-separate release workflow.
-
-## OpenAVT release-name verification
-
-The renamed OpenAVT v0.1.0 wheel was installed with `agents` in a fresh virtual
-environment and run outside the checkout. The environment exposes `openavt` and
-its CLI, with no previous package namespace installed. Two real GPT-6.1 Sol
-agents completed the live PCMU audio call with a **32.003 s** mutual TLS handshake
-and a **5.957 s** protected order-status request/response. Both endpoints had zero
-retries and zero bad modem frames. Evidence remains local in
-`output/openavt-agents/`.
-
-All 13 tests passed after the rename. Both GitHub workflows passed actionlint.
-The clean core wheel completed its mutual TLS loopback without optional pip
-dependencies. Release checks verify the `openavt` filename, metadata, import
-namespace, CLI entry point, extras, Apache-2.0 license, and README title. Both
-archives contain no previous package name or local/private run artifacts.
-Source is hosted at [ketanbj/openavt](https://github.com/ketanbj/openavt);
-PyPI publication is pending.
+Public JSON omits credentials, delegation tokens and transcripts. Raw reports
+and recordings stay in ignored `output/`; capture hashes identify those local
+artifacts but do not make them independently inspectable.
