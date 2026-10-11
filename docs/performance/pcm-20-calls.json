@@ -1,0 +1,2370 @@
+{
+  "timestamp_utc": "2026-10-11T03:49:09.567159+00:00",
+  "environment": {
+    "os": "Darwin",
+    "os_release": "25.6.0",
+    "arch": "arm64",
+    "python": "3.13.10",
+    "openssl": "OpenSSL 3.6.3 9 Jun 2026",
+    "dependencies": {
+      "aiortc": "1.15.0",
+      "av": "17.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "profile": "pcm",
+  "codec": "G.711 PCMU: 64,000 bits/s audio payload; excludes RTP/SRTP/IP headers",
+  "modem_raw_bitrate_bps": 56000,
+  "conditions": "two local audio-only WebRTC peers; fresh CA, contexts and full TLS 1.3 mTLS per run; P-256; no session reuse or data channel",
+  "timing_boundary": "client TLS start through both authenticated endpoints and final audio ACK; excludes PKI/call setup and LLM/speech",
+  "statistics": {
+    "runs": 20,
+    "min_seconds": 0.6,
+    "median_seconds": 0.621,
+    "p95_seconds": 0.623,
+    "max_seconds": 0.624,
+    "all_under_one_second": true
+  },
+  "measurements": [
+    {
+      "run": 1,
+      "handshake_seconds": 0.62,
+      "protected_round_trip_seconds": 0.2,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1476,
+          "tls_bytes_tx": 1724,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.158819
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1091,
+              "delivery_seconds": 0.239857
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099273
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001491,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.62,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1724,
+          "tls_bytes_tx": 1476,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1338,
+              "delivery_seconds": 0.259682
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100289
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.00131,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.478,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 4
+          }
+        ]
+      },
+      "report_sha256": "7565ae08ffbb50434bc5873d1de4ebb5d1dfcfc0869be06f8d46829635549c4b",
+      "recording_sha256": "7d467bf329508c212c66a6d34143af7c8e8d9cb41b3c4c3d3109e69847f10cfc"
+    },
+    {
+      "run": 2,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.2,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1472,
+          "tls_bytes_tx": 1721,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.162212
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1088,
+              "delivery_seconds": 0.239805
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099955
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000829,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.62,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1721,
+          "tls_bytes_tx": 1472,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1334,
+              "delivery_seconds": 0.257298
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100287
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001862,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.478,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ]
+      },
+      "report_sha256": "30670ab762d348844ccfbe6d91e910fdf3d281b0063514b38a06aaf1043bf2ac",
+      "recording_sha256": "c79104e545f72ceccfbde27a7d8410bb7dd28bb3f13638ed233f776ad9badbe5"
+    },
+    {
+      "run": 3,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.2,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1474,
+          "tls_bytes_tx": 1724,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160767
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1091,
+              "delivery_seconds": 0.240028
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.09943
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001005,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.621,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1724,
+          "tls_bytes_tx": 1474,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1336,
+              "delivery_seconds": 0.259652
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100373
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000981,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.479,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ]
+      },
+      "report_sha256": "712d2ef3389cfd8a6adf3f9f24ffb946395c1b44174280072185e8d8209612af",
+      "recording_sha256": "c34d56fd9c0408564a3f57b433592f00ae0782d9780a4c193cf286b1491007a3"
+    },
+    {
+      "run": 4,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.2,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1474,
+          "tls_bytes_tx": 1722,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160648
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1089,
+              "delivery_seconds": 0.240112
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099819
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000677,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.621,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1722,
+          "tls_bytes_tx": 1474,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1336,
+              "delivery_seconds": 0.260031
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.09963
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.00113,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ]
+      },
+      "report_sha256": "fd92b5ef332fab200c48c205bc4c530ac38da68a6cd228fe6b29603bb32639a2",
+      "recording_sha256": "1138a34255e3a7828b6c2cad7a650528d54832421a6acb96014f619ba6a0b577"
+    },
+    {
+      "run": 5,
+      "handshake_seconds": 0.6,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1474,
+          "tls_bytes_tx": 1723,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.161457
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1090,
+              "delivery_seconds": 0.217421
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.100799
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.002788,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.6,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1723,
+          "tls_bytes_tx": 1474,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1336,
+              "delivery_seconds": 0.260977
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.098068
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001299,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.46,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 54,
+          "audio_samples_rx": 8640,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 56,
+            "bytesSent": 8960
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 55,
+            "packetsLost": 0,
+            "jitter": 7
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 55,
+            "bytesSent": 8800
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 56,
+            "packetsLost": 0,
+            "jitter": 6
+          }
+        ]
+      },
+      "report_sha256": "fef962a670e168a8d95164d3ceb1c136ca55c331f13bb552c2fd6da88c7b296e",
+      "recording_sha256": "4efa6a80070c903d9d012bc433c0e38c84439710967ace91d145b4be1338554e"
+    },
+    {
+      "run": 6,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1475,
+          "tls_bytes_tx": 1721,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160379
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1088,
+              "delivery_seconds": 0.23995
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099326
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001021,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.621,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1721,
+          "tls_bytes_tx": 1475,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1337,
+              "delivery_seconds": 0.260116
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.099892
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001095,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.481,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ]
+      },
+      "report_sha256": "189a12f96a3580b74a13d2b711192513a1943e82282e652f5b3e10e924bfb086",
+      "recording_sha256": "b942fc54330426a271074475e87d58434f77996f5009b4cc6ab5e6f7e735ca47"
+    },
+    {
+      "run": 7,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1475,
+          "tls_bytes_tx": 1720,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160252
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1087,
+              "delivery_seconds": 0.240752
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.098858
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000741,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.621,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1720,
+          "tls_bytes_tx": 1475,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1337,
+              "delivery_seconds": 0.259252
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100082
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001023,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 1
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ]
+      },
+      "report_sha256": "8cc15613afee2640a65d5ff745acd43cfd2ccbb49c41a6d801c58c21bd8920cf",
+      "recording_sha256": "ea52d26996a8e19eea93387ab15264315c82a17cf88c543c990564d0bfe3e82f"
+    },
+    {
+      "run": 8,
+      "handshake_seconds": 0.62,
+      "protected_round_trip_seconds": 0.2,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1473,
+          "tls_bytes_tx": 1723,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160203
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1090,
+              "delivery_seconds": 0.239572
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.100819
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000937,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.62,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1723,
+          "tls_bytes_tx": 1473,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1335,
+              "delivery_seconds": 0.260011
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.099305
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000893,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ]
+      },
+      "report_sha256": "416528daf7c7b8df1be70355d6a85c165635d6175540dc80601757f93406fe2e",
+      "recording_sha256": "83299008e2209af4dfd1972cb5cdecb808ae1428b1b210bd4b7d417ff180d4ec"
+    },
+    {
+      "run": 9,
+      "handshake_seconds": 0.623,
+      "protected_round_trip_seconds": 0.197,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1472,
+          "tls_bytes_tx": 1719,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160152
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1086,
+              "delivery_seconds": 0.241648
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.097183
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001365,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.623,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1719,
+          "tls_bytes_tx": 1472,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1334,
+              "delivery_seconds": 0.260412
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100009
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001759,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.482,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 5
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 5
+          }
+        ]
+      },
+      "report_sha256": "302569a20d13da1d0591ebf9b4d1842111f916b445ef2e49e279736a3ec6d416",
+      "recording_sha256": "2bda5d456b103c3efabfae70cb92397ea136b7af300d1025dd5349864146e80d"
+    },
+    {
+      "run": 10,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.201,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1474,
+          "tls_bytes_tx": 1724,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160116
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1091,
+              "delivery_seconds": 0.240188
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.100639
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000839,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.62,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1724,
+          "tls_bytes_tx": 1474,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1336,
+              "delivery_seconds": 0.259342
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100032
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001166,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ]
+      },
+      "report_sha256": "3a1e978212c188f0c42b5ff67b12ae0432d994e61148cda8dfce52349c66773e",
+      "recording_sha256": "47d15e5e55e96a3c0a2464f3cb25444fce8f4b418e91e49ffc6eaf46b5daf4ec"
+    },
+    {
+      "run": 11,
+      "handshake_seconds": 0.62,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1473,
+          "tls_bytes_tx": 1720,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.159291
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1087,
+              "delivery_seconds": 0.240215
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099608
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001194,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.62,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1720,
+          "tls_bytes_tx": 1473,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1335,
+              "delivery_seconds": 0.25997
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.098759
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001016,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 56,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 56,
+            "bytesSent": 8960
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ]
+      },
+      "report_sha256": "8e1456e13cbc32013909dc1a4b46dafc235ed94d53365ac226f33ab6caeff61d",
+      "recording_sha256": "75bca66389f148fe6f09b0e8d0947b265a2926092f9485d65ad42ca58e12cb5c"
+    },
+    {
+      "run": 12,
+      "handshake_seconds": 0.601,
+      "protected_round_trip_seconds": 0.2,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1474,
+          "tls_bytes_tx": 1723,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.161848
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1090,
+              "delivery_seconds": 0.21934
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099046
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001854,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.601,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1723,
+          "tls_bytes_tx": 1474,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1336,
+              "delivery_seconds": 0.259671
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100625
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001309,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.459,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 54,
+          "audio_samples_rx": 8640,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 56,
+            "bytesSent": 8960
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 56,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 56,
+            "bytesSent": 8960
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 56,
+            "packetsLost": 0,
+            "jitter": 5
+          }
+        ]
+      },
+      "report_sha256": "e0ea98016cf2a456fc2eb59fda715356fcfc8bf62c757070c90ef6587cfb3004",
+      "recording_sha256": "83aa3ed1f3b7d9496615216be5b3ef19944344b30589c2d2b950280477696346"
+    },
+    {
+      "run": 13,
+      "handshake_seconds": 0.622,
+      "protected_round_trip_seconds": 0.198,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1475,
+          "tls_bytes_tx": 1724,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.16
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1091,
+              "delivery_seconds": 0.241881
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.098698
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000641,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.622,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1724,
+          "tls_bytes_tx": 1475,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1337,
+              "delivery_seconds": 0.260068
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.098437
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000654,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.481,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 56,
+            "packetsLost": 0,
+            "jitter": 2
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 56,
+            "bytesSent": 8960
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ]
+      },
+      "report_sha256": "5d416074e7134158344245f5950b192aee42215b3303eed624adbe54bd5f3c72",
+      "recording_sha256": "3a3780f55ff1282b9bef0ebe92c8346a01b883bd8bf94b6fb339ebcd123373a7"
+    },
+    {
+      "run": 14,
+      "handshake_seconds": 0.623,
+      "protected_round_trip_seconds": 0.2,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1477,
+          "tls_bytes_tx": 1724,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.158744
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1091,
+              "delivery_seconds": 0.242625
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099399
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001901,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.622,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1724,
+          "tls_bytes_tx": 1477,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1339,
+              "delivery_seconds": 0.25813
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.099073
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.002445,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 9
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 9
+          }
+        ]
+      },
+      "report_sha256": "79073ffa02d2f0e9796582d5c03999d137e049299add1e15993f0ef1c0c1b3e1",
+      "recording_sha256": "76ab6294f25c6cb20cba01ff55d2a7c792f45ccb75e46d7e0c5c97d1a35d3603"
+    },
+    {
+      "run": 15,
+      "handshake_seconds": 0.622,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1475,
+          "tls_bytes_tx": 1722,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160268
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1089,
+              "delivery_seconds": 0.240878
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099232
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001117,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.621,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1722,
+          "tls_bytes_tx": 1475,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1337,
+              "delivery_seconds": 0.260916
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.099424
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001606,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.479,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 6
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 7
+          }
+        ]
+      },
+      "report_sha256": "2ad039f1839ea6056acd24dd8d4e25ccd43c27e00efc101889256753076e6bad",
+      "recording_sha256": "ce84660091c858612aa18bbc3c4dd94fb07fb8404d6778d320aac46b2bc6abbd"
+    },
+    {
+      "run": 16,
+      "handshake_seconds": 0.601,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1475,
+          "tls_bytes_tx": 1725,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160205
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1092,
+              "delivery_seconds": 0.220155
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099345
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000871,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.601,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1725,
+          "tls_bytes_tx": 1475,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1337,
+              "delivery_seconds": 0.260183
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.099662
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001061,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.46,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 54,
+          "audio_samples_rx": 8640,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 56,
+            "bytesSent": 8960
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 56,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 56,
+            "bytesSent": 8960
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 56,
+            "packetsLost": 0,
+            "jitter": 5
+          }
+        ]
+      },
+      "report_sha256": "23b43df5fa9344bd2d68e2c9562eb5d6414e2aa9d1427985d6eba3b05512db49",
+      "recording_sha256": "1a0abf41988cffd1f9a95ef26b908c976ad52098d844fa34da25047b326a5dd3"
+    },
+    {
+      "run": 17,
+      "handshake_seconds": 0.623,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1473,
+          "tls_bytes_tx": 1721,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.161001
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1088,
+              "delivery_seconds": 0.241291
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099074
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001111,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.622,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1721,
+          "tls_bytes_tx": 1473,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1335,
+              "delivery_seconds": 0.259799
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.099391
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.002086,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.481,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 5
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 7
+          }
+        ]
+      },
+      "report_sha256": "649be50f3bbcc0ddaa07f4533f4425cbf7286a45c06b189454a1468376596b86",
+      "recording_sha256": "2cd0cdc1090bb20d6c1f5f6a1d01e29d6d7fd9d31a45ea8874be62125491be40"
+    },
+    {
+      "run": 18,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.202,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1475,
+          "tls_bytes_tx": 1722,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.160355
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1089,
+              "delivery_seconds": 0.239659
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.100025
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001144,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.62,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1722,
+          "tls_bytes_tx": 1475,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1337,
+              "delivery_seconds": 0.260326
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.101729
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000973,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 3
+          }
+        ]
+      },
+      "report_sha256": "30e96afa05e68ad191e7a2be4a2a8889e29108a7b5db16f9815e9bfd144d1b5e",
+      "recording_sha256": "0b0ae110fd107b8b05bca02ac12fbb1150cd0762b7298b6983314d16bea341a4"
+    },
+    {
+      "run": 19,
+      "handshake_seconds": 0.621,
+      "protected_round_trip_seconds": 0.199,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1473,
+          "tls_bytes_tx": 1724,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.16063
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1091,
+              "delivery_seconds": 0.23778
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.099794
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.002007,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.62,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1724,
+          "tls_bytes_tx": 1473,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1335,
+              "delivery_seconds": 0.259755
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.098786
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001942,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.478,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 4
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 4
+          }
+        ]
+      },
+      "report_sha256": "7a7d8f1d6bfd773b7eb9ba621aead4efd6d333f29004335372611873a090278d",
+      "recording_sha256": "16d1d21dfa63ca1b48977f9b3b25ce77651c9c2a195fac957f5508bcdba95376"
+    },
+    {
+      "run": 20,
+      "handshake_seconds": 0.624,
+      "protected_round_trip_seconds": 0.197,
+      "verified": true,
+      "tls": {
+        "agent": {
+          "data_frames_rx": 2,
+          "ack_frames_rx": 3,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1475,
+          "tls_bytes_tx": 1722,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.161039
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1089,
+              "delivery_seconds": 0.242696
+            },
+            {
+              "phase": "application",
+              "bytes": 116,
+              "delivery_seconds": 0.096697
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.000936,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.624,
+          "error": null
+        },
+        "desk": {
+          "data_frames_rx": 3,
+          "ack_frames_rx": 2,
+          "messages_rx": 1,
+          "tls_bytes_rx": 1722,
+          "tls_bytes_tx": 1475,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1337,
+              "delivery_seconds": 0.260446
+            },
+            {
+              "phase": "application",
+              "bytes": 138,
+              "delivery_seconds": 0.100148
+            }
+          ],
+          "tls_handshake_cpu_seconds": 0.001062,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.48,
+          "error": null
+        }
+      },
+      "audio": {
+        "agent": {
+          "audio_packets_rx": 55,
+          "audio_samples_rx": 8800,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        },
+        "desk": {
+          "audio_packets_rx": 56,
+          "audio_samples_rx": 8960,
+          "modem_good_frames": 5,
+          "modem_bad_frames": 0,
+          "preamble_acquisitions": 5
+        }
+      },
+      "rtp_stats": {
+        "agent": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 4
+          }
+        ],
+        "desk": [
+          {
+            "type": "outbound-rtp",
+            "kind": "audio",
+            "packetsSent": 57,
+            "bytesSent": 9120
+          },
+          {
+            "type": "inbound-rtp",
+            "kind": "audio",
+            "packetsReceived": 57,
+            "packetsLost": 0,
+            "jitter": 4
+          }
+        ]
+      },
+      "report_sha256": "c62d4a7fdd3b95590f80fa8071f37cba0d3b86112f911b34340f64359b169bf2",
+      "recording_sha256": "a47bbd18b79363925f2b3f0af8bcfb2021b954690f7a5cd9b7f20f0ca287e22a"
+    }
+  ]
+}

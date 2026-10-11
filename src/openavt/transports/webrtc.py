@@ -35,8 +35,9 @@ def stereo_recording(directory: Path) -> None:
 
 
 class OutgoingAudio(AudioStreamTrack):
-    def __init__(self):
+    def __init__(self, profile: str = "voiceband"):
         super().__init__()
+        self.profile = profile
         self.pending = deque()
         self.pts = 0
         self.started: float | None = None
@@ -49,7 +50,8 @@ class OutgoingAudio(AudioStreamTrack):
             self.pending.append([np.asarray(samples, dtype=np.int16), 0, future])
             await asyncio.wait_for(future, timeout=len(samples) / RATE + 10)
             # Leave a small turnaround/speech gap on the actual audio stream.
-            await asyncio.sleep(0.08)
+            if kind == "speech" or self.profile == "voiceband":
+                await asyncio.sleep(0.08)
 
     async def recv(self):
         now = time.monotonic()
@@ -118,10 +120,15 @@ class SpeechDetector:
 
 
 class AudioReceiver:
-    def __init__(self, name: str, path: Path, log):
+    def __init__(self, name: str, path: Path, log, profile: str = "voiceband"):
         self.name = name
         self.log = log
-        self.decoder = StreamDecoder()
+        if profile == "pcm":
+            from openavt.pcm import StreamDecoder as PCMDecoder
+
+            self.decoder = PCMDecoder()
+        else:
+            self.decoder = StreamDecoder()
         self.speech = SpeechDetector()
         self.utterances: asyncio.Queue[np.ndarray] = asyncio.Queue()
         self.on_frame = lambda *args: None
@@ -176,8 +183,27 @@ class AudioReceiver:
         }
 
 
+def _low_delay_audio(receiver) -> None:
+    """aiortc 1.15 adapter: one 20 ms frame of prefetch for the local demo.
+
+    No public jitter-buffer setting exists. Fail closed if its layout changes;
+    this alters buffering only, never RTP audio bytes or the decoded samples.
+    """
+    from aiortc.jitterbuffer import JitterBuffer
+
+    jitter = getattr(receiver, "_RTCRtpReceiver__jitter_buffer", None)
+    if not isinstance(jitter, JitterBuffer) or jitter.capacity != 16 or jitter._prefetch != 4:
+        raise RuntimeError("unsupported aiortc audio jitter-buffer layout")
+    jitter._prefetch = 1
+
+
 class AudioCall:
-    def __init__(self, directory: Path, log, codec: str = "PCMU"):
+    def __init__(self, directory: Path, log, codec: str = "PCMU", *, profile: str = "voiceband"):
+        if profile not in ("voiceband", "pcm"):
+            raise ValueError(f"unknown modem profile: {profile}")
+        if profile == "pcm" and codec != "PCMU":
+            raise ValueError("PCM profile requires an unchanged 64 kbps PCMU audio path")
+        self.profile = profile
         self.codec = codec
         self.peers = {}
         self.outputs = {}
@@ -186,11 +212,12 @@ class AudioCall:
         self.log = log
         for name in ("agent", "desk"):
             pc = RTCPeerConnection(RTCConfiguration(iceServers=[]))
-            outgoing = OutgoingAudio()
+            outgoing = OutgoingAudio(profile)
             receiver = AudioReceiver(
                 name,
                 directory / f"{name}-received.wav",
                 lambda event, name=name, **fields: log(name, event, **fields),
+                profile,
             )
             connected = asyncio.Event()
             self.peers[name], self.outputs[name], self.inputs[name], self.connected[name] = (
@@ -200,6 +227,8 @@ class AudioCall:
                 connected,
             )
             pc.addTrack(outgoing)
+            if profile == "pcm":
+                _low_delay_audio(pc.getTransceivers()[0].receiver)
             preferences = [
                 c
                 for c in RTCRtpSender.getCapabilities("audio").codecs

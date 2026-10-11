@@ -1,5 +1,19 @@
 # OpenAVT verification results
 
+## Fast digital G.711 profile
+
+The `perf` branch adds opt-in `--profile pcm`, using 56 kbps raw modem data in
+a 64 kbps PCMU audio stream. Twenty fresh local audio-only WebRTC calls measured
+a median **0.621 s** handshake, p95 **0.623 s**, and maximum **0.624 s**, all with
+verified protected requests, no session reuse, no retries and no bad frames.
+Two real GPT-6.1 Sol agents completed this profile with a **0.585 s** handshake
+and **2.937 s** protected request/response, including desk ASR and LLM time.
+The [performance report](performance.md) contains the timing boundary, digital
+G.711 requirements, public evidence, and reproduction commands. These results
+do not establish equivalent performance over analog or transcoded audio.
+
+## Original voice-band FSK profile
+
 The pre-packaging implementation completed real local WebRTC calls with two
 OpenAI GPT-6.1 Sol agents. Each had its own Responses context and tools, transcribed
 received RTP audio, and used synthesized speech. The codec was G.711/PCMU and the

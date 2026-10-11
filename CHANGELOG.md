@@ -2,6 +2,10 @@
 
 ## 0.1.0 — unreleased
 
+- Add an opt-in digital G.711 PCM modem with 56 kbps raw data in a 64 kbps
+  audio stream, larger frames and low-delay buffering for sub-second cold mTLS.
+- Add repeatable handshake benchmarking, per-flight metrics, and PCM security,
+  codec preservation and live-call tests.
 - Package the working prototype under `src/openavt`, with core framing and TLS,
   streaming audio, WebRTC transport, OpenAI agents, and runnable demos.
 - Add `openavt loopback` and `openavt live`, plus `python -m openavt`.

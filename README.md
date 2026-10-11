@@ -3,7 +3,8 @@
 **TLS over voice. Built for agents.**
 
 OpenAVT (**Open Agent Voice TLS**) is an experimental Python package that carries
-**real mutual TLS 1.3 records as voice-band FSK tones**. It includes a WAV loopback proof and a live local WebRTC
+**real mutual TLS 1.3 records as audio**. It offers voice-band FSK and a fast
+digital G.711 PCM modem. It includes a WAV loopback proof and a live local WebRTC
 call between two OpenAI voice agents.
 
 The TLS implementation is Python's OpenSSL-backed `ssl.MemoryBIO`. The audio link
@@ -53,8 +54,11 @@ openavt loopback --scenario valid
 # Live WebRTC audio without OpenAI calls.
 openavt live --transport-only
 
+# Sub-second handshake on an unchanged 64 kbps G.711 audio path.
+openavt live --transport-only --profile pcm
+
 # Two real OpenAI agents, using your configured key.
-openavt live
+openavt live --profile pcm
 
 # A certified caller requests a mutation outside its read-only grant.
 openavt live --scenario scope
@@ -70,6 +74,14 @@ Agents transcribe speech actually received through WebRTC. A fixed backend grant
 allows `order.read` for the demo order and rejects `address.change`. The backend
 enforces this policy outside the LLM. Structured decisions cross audio TLS;
 ordinary speech alternates with tone bursts and is outside that inner TLS session.
+
+`--profile voiceband` (the default) uses 1 kbps FSK. `--profile pcm` sends 7 bits
+per 8 kHz sample using 128 G.711 reconstruction levels: **56 kbps raw modem data
+inside a 64 kbps PCMU audio stream**. Frame headers, ACKs, and packet timing reduce
+the net rate. PCM requires an unchanged digital PCMU path; lossy codecs,
+transcoding, gain control, noise suppression, mixing, or analog playback can
+destroy it. It is a digital PCM modem, with audible noise-like bursts, rather
+than a microphone-compatible tone modem. It refuses `--codec opus`.
 
 Both demos accept `--scenario valid|scope|loss|untrusted` and `--output PATH`.
 An explicitly selected output directory must be empty. Default output directories
@@ -88,6 +100,7 @@ src/openavt/
   tls.py              Transport-independent MemoryBIO TLS endpoint
   pki.py              Ephemeral demo certificates and endpoint factory
   modem.py            Streaming preamble acquisition and frame decoding
+  pcm.py              Fast 56 kbps digital G.711 PCM modem
   channel.py          Reliable audio framing around the TLS byte stream
   transports/webrtc.py  Live audio-only WebRTC transport
   agents/openai.py    Independent OpenAI agent contexts, ASR and TTS
@@ -108,6 +121,13 @@ measuring a **32.003 s** mutual TLS handshake and a **5.957 s** protected
 request/response. Earlier agent calls also verified denial of an address change. These are local-machine
 measurements, not throughput or Internet guarantees; detailed conditions are in
 [verified results](docs/verification.md).
+
+The PCM profile completed **20 fresh full mutual TLS handshakes**, with median
+**0.621 s**, p95 **0.623 s**, and maximum **0.624 s**, each followed by a verified
+protected request/response. See the [performance evidence and reproduction
+commands](docs/performance.md). These measurements use two local peers and
+include the final audio ACK; call setup, certificate creation, and LLM speech
+are timed separately.
 
 ```sh
 uv run --locked --extra agents pytest -q
