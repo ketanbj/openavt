@@ -72,6 +72,10 @@ class AuthorityClient:
             status = error.code
             error.close()
             raise AuthorityError(f"authority_http_{status}", status) from None
+        except (urllib.error.URLError, OSError):
+            # Overload can close the socket before a request upload completes.
+            # Fail closed without reflecting URLs, credentials or socket details.
+            raise AuthorityError("authority_unavailable", 503) from None
 
     def account(self) -> dict:
         return self.post("/v1/accounts", {})

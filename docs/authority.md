@@ -35,7 +35,7 @@ Two real GPT-6.1 Sol agents completed the flow with a **0.623 s** full mutual
 TLS handshake and all eight authorization cases verified. [Public verification
 evidence](authority-verification.json) records the results and model counters
 without tokens, customer credentials or speech transcripts.
-All **72 automated tests** passed locally. A fresh non-editable wheel environment
+All **75 automated tests** passed locally. A fresh non-editable wheel environment
 also completed all eight cases without an OpenAI dependency installed; the
 authority-only installation was checked without audio dependencies.
 
@@ -141,6 +141,11 @@ consent requests require JSON with bounded fields; their endpoint definitions
 are in `authority/service.py`. HTTPS is required when binding off loopback, with
 `--https-cert` and `--https-key`. Clients use normal HTTPS validation and refuse
 redirects. Remote hosting and Internet exposure have not been verified.
+
+At worker capacity the HTTP service rejects new connections with 503; a client
+still uploading may instead encounter a closed socket. The client reports that
+transport failure as `authority_unavailable` (status 503) and does not retry
+automatically. HTTPS overload closes the connection before its TLS handshake.
 
 ## Trust and CIA boundaries
 

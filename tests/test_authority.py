@@ -7,6 +7,7 @@ import stat
 import subprocess
 import sys
 import threading
+import urllib.error
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
@@ -181,13 +182,37 @@ def test_http_requires_auth_and_bounds_body_and_workers(service):
     for _ in range(8):
         assert server.workers.acquire(timeout=1)
     try:
+        connection = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=5)
+        connection.request("GET", "/v1/directory")
+        assert connection.getresponse().status == 503
+        connection.close()
         with pytest.raises(AuthorityError) as error:
             client.account()
         assert error.value.status == 503
+        assert str(error.value) in ("authority_http_503", "authority_unavailable")
     finally:
         for _ in range(8):
             server.workers.release()
     assert client.account()["assurance"] == "pseudonymous-key-control"
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [urllib.error.URLError("private detail"), TimeoutError("private detail"), ConnectionResetError()],
+)
+def test_client_transport_failure_is_sanitized_and_not_retried(monkeypatch, failure):
+    client = AuthorityClient("http://127.0.0.1:8400")
+    calls = []
+
+    def unavailable(*args, **kwargs):
+        calls.append(1)
+        raise failure
+
+    monkeypatch.setattr(client.opener, "open", unavailable)
+    with pytest.raises(AuthorityError, match="^authority_unavailable$") as error:
+        client.account()
+    assert error.value.status == 503
+    assert calls == [1]
 
 
 @pytest.mark.parametrize(
