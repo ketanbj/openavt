@@ -13,9 +13,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--version", action="version", version=f"openavt {__version__}")
     parser.add_argument(
         "command",
-        choices=("loopback", "live", "ava", "delegation-demo"),
+        choices=("loopback", "live", "ava", "delegation-demo", "sdk-demo"),
         nargs="?",
-        help="WAV proof, live call, Agent Voice Authority, or delegated-access demo",
+        help="WAV proof, live call, authority, delegated access, or independent SDK agents",
     )
     arguments = list(sys.argv[1:] if argv is None else argv)
     # Parse only the leading command; each demo owns its options and help.
@@ -34,22 +34,48 @@ def main(argv: list[str] | None = None) -> None:
             raise
     else:
         try:
-            if options.command == "delegation-demo":
+            if options.command == "sdk-demo":
+                from openavt.demos.sdk import main as run
+            elif options.command == "delegation-demo":
                 from openavt.demos.delegation import main as run
             else:
                 from openavt.demos.live import main as run
 
             needs_agents = (options.command == "live" and "--transport-only" not in arguments) or (
-                options.command == "delegation-demo" and "--agents" in arguments
+                options.command in {"delegation-demo", "sdk-demo"} and "--agents" in arguments
             )
             if needs_agents and not any(a in arguments for a in ("-h", "--help")):
                 from openavt.agents.openai import VoiceAgent  # noqa: F401
+            if options.command == "sdk-demo" and not any(a in arguments for a in ("-h", "--help")):
+                from openavt.session import VoiceSession  # noqa: F401
+
+                if any(a.startswith("twilio-") for a in arguments):
+                    from openavt.transports.twilio import TwilioAdapter  # noqa: F401
+                else:
+                    from openavt.transports.peer import WebRTCAdapter  # noqa: F401
         except ModuleNotFoundError as error:
-            dependencies = {"numpy", "scipy", "aiortc", "av", "dotenv", "openai", "cryptography"}
+            dependencies = {
+                "numpy",
+                "scipy",
+                "aiortc",
+                "av",
+                "dotenv",
+                "openai",
+                "cryptography",
+                "twilio",
+                "aiohttp",
+            }
             if error.name and error.name.split(".")[0] in dependencies:
                 extra = "webrtc" if "--transport-only" in arguments else "agents"
                 if options.command == "delegation-demo":
                     extra = "agents,authority" if "--agents" in arguments else "webrtc,authority"
+                if options.command == "sdk-demo":
+                    transport_extra = (
+                        "twilio" if any(a.startswith("twilio-") for a in arguments) else "webrtc"
+                    )
+                    extra = "agents,authority" if "--agents" in arguments else transport_extra + ",authority"
+                    if transport_extra == "twilio" and "--agents" in arguments:
+                        extra += ",twilio"
                 parser.error(f"Install the optional dependencies: pip install 'openavt[{extra}]'")
             raise
     run(arguments[1:])

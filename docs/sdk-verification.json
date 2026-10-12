@@ -1,0 +1,709 @@
+{
+  "recorded_at": "2026-10-12T03:53:40.210973+00:00",
+  "environment": {
+    "python": "3.14.6",
+    "system": "Darwin",
+    "architecture": "arm64"
+  },
+  "scope": "Two local processes, demo identities and customer consent, fixed read-only handler. Twilio emulation is not carrier verification. Ordinary speech is outside inner TLS.",
+  "tests": {
+    "count": 155,
+    "passed": true,
+    "command": "uv run --locked --extra webrtc --extra authority --extra twilio pytest -q"
+  },
+  "runs": [
+    {
+      "transport": "webrtc",
+      "openai_agents": false,
+      "verified": true,
+      "independent_processes": true,
+      "provider_network_verified": false,
+      "protected_request_delivery": "audio only",
+      "caller": {
+        "pid": 87054,
+        "llm": null,
+        "sdk": {
+          "state": "verified",
+          "handshake_wall_seconds": 0.6188019999535754,
+          "data_frames_rx": 16,
+          "ack_frames_rx": 17,
+          "messages_rx": 15,
+          "tls_bytes_rx": 3521,
+          "tls_bytes_tx": 8867,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.00188,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.619,
+          "error": null,
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.159664
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1133,
+              "delivery_seconds": 0.238626
+            }
+          ]
+        },
+        "audio": {
+          "transport": "webrtc",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 31520,
+          "audio_samples_tx": 13273,
+          "data_channel": false
+        },
+        "results": [
+          {
+            "case": "valid",
+            "result": "allowed",
+            "reason": "authorized",
+            "verified": true,
+            "round_trip_seconds": 0.439904
+          },
+          {
+            "case": "scope",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.440157
+          },
+          {
+            "case": "replay",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.439714
+          },
+          {
+            "case": "other_customer",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.440617
+          },
+          {
+            "case": "expired",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.439547
+          },
+          {
+            "case": "revoked_grant",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.44005
+          },
+          {
+            "case": "wrong_key",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.419673
+          },
+          {
+            "case": "revoked_certificate",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.157718
+          }
+        ]
+      },
+      "business": {
+        "pid": 87055,
+        "llm": null,
+        "sdk": {
+          "state": "failed",
+          "handshake_wall_seconds": 0.5989651669515297,
+          "data_frames_rx": 17,
+          "ack_frames_rx": 16,
+          "messages_rx": 15,
+          "tls_bytes_rx": 8867,
+          "tls_bytes_tx": 3521,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.001879,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.479,
+          "error": "ConnectionError",
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1343,
+              "delivery_seconds": 0.260302
+            }
+          ]
+        },
+        "audio": {
+          "transport": "webrtc",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 32800,
+          "audio_samples_tx": 7168,
+          "data_channel": false
+        },
+        "gateway": {
+          "requests": 8,
+          "handler_executions": 1,
+          "denials": 7
+        }
+      },
+      "provider": null,
+      "raw_report_sha256": "6106732f945b36f51751a3aae70f9f64951641907fd2449cc40737d4233e59db"
+    },
+    {
+      "transport": "twilio-emulated",
+      "openai_agents": false,
+      "verified": true,
+      "independent_processes": true,
+      "provider_network_verified": false,
+      "protected_request_delivery": "audio only",
+      "caller": {
+        "pid": 86152,
+        "llm": null,
+        "sdk": {
+          "state": "verified",
+          "handshake_wall_seconds": 0.522633415996097,
+          "data_frames_rx": 16,
+          "ack_frames_rx": 17,
+          "messages_rx": 15,
+          "tls_bytes_rx": 3520,
+          "tls_bytes_tx": 8868,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.001698,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.522,
+          "error": null,
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.10116
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1134,
+              "delivery_seconds": 0.199393
+            }
+          ]
+        },
+        "audio": {
+          "transport": "twilio-media-streams",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 25440,
+          "audio_samples_tx": 25440,
+          "playback_marks_acknowledged": 33
+        },
+        "results": [
+          {
+            "case": "valid",
+            "result": "allowed",
+            "reason": "authorized",
+            "verified": true,
+            "round_trip_seconds": 0.359133
+          },
+          {
+            "case": "scope",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.360117
+          },
+          {
+            "case": "replay",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.360668
+          },
+          {
+            "case": "other_customer",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.35951
+          },
+          {
+            "case": "expired",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.359887
+          },
+          {
+            "case": "revoked_grant",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.360559
+          },
+          {
+            "case": "wrong_key",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.339701
+          },
+          {
+            "case": "revoked_certificate",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.118765
+          }
+        ]
+      },
+      "business": {
+        "pid": 86153,
+        "llm": null,
+        "sdk": {
+          "state": "failed",
+          "handshake_wall_seconds": 0.523920250008814,
+          "data_frames_rx": 17,
+          "ack_frames_rx": 16,
+          "messages_rx": 15,
+          "tls_bytes_rx": 8868,
+          "tls_bytes_tx": 3520,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.001692,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.442,
+          "error": "ConnectionError",
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1342,
+              "delivery_seconds": 0.21964
+            }
+          ]
+        },
+        "audio": {
+          "transport": "twilio-media-streams",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 25440,
+          "audio_samples_tx": 25600,
+          "playback_marks_acknowledged": 33
+        },
+        "gateway": {
+          "requests": 8,
+          "handler_executions": 1,
+          "denials": 7
+        }
+      },
+      "provider": {
+        "emulated": true,
+        "audio_packets_forwarded": 318,
+        "playback_marks": 66,
+        "permitted_worker_events": [
+          "media",
+          "mark"
+        ]
+      },
+      "raw_report_sha256": "67a32e598e26e3ece497105e24d00920f99b4a607115192e346ed0253c9faa70"
+    },
+    {
+      "transport": "webrtc",
+      "openai_agents": true,
+      "verified": true,
+      "independent_processes": true,
+      "provider_network_verified": false,
+      "protected_request_delivery": "audio only",
+      "caller": {
+        "pid": 93457,
+        "llm": {
+          "model": "gpt-6.1-sol",
+          "api_calls": {
+            "llm": 2,
+            "tts": 2,
+            "asr": 2
+          }
+        },
+        "sdk": {
+          "state": "verified",
+          "handshake_wall_seconds": 0.6196795420255512,
+          "data_frames_rx": 16,
+          "ack_frames_rx": 17,
+          "messages_rx": 15,
+          "tls_bytes_rx": 3521,
+          "tls_bytes_tx": 8867,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.001913,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.619,
+          "error": null,
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.157749
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1133,
+              "delivery_seconds": 0.241404
+            }
+          ]
+        },
+        "audio": {
+          "transport": "webrtc",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 372160,
+          "audio_samples_tx": 124473,
+          "data_channel": false
+        },
+        "results": [
+          {
+            "case": "valid",
+            "result": "allowed",
+            "reason": "authorized",
+            "verified": true,
+            "round_trip_seconds": 0.44096
+          },
+          {
+            "case": "scope",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 1.660045
+          },
+          {
+            "case": "replay",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.439584
+          },
+          {
+            "case": "other_customer",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.439793
+          },
+          {
+            "case": "expired",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.440821
+          },
+          {
+            "case": "revoked_grant",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.43932
+          },
+          {
+            "case": "wrong_key",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.419785
+          },
+          {
+            "case": "revoked_certificate",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.152048
+          }
+        ]
+      },
+      "business": {
+        "pid": 93458,
+        "llm": {
+          "model": "gpt-6.1-sol",
+          "api_calls": {
+            "llm": 3,
+            "tts": 2,
+            "asr": 2
+          }
+        },
+        "sdk": {
+          "state": "failed",
+          "handshake_wall_seconds": 0.5983285830589011,
+          "data_frames_rx": 17,
+          "ack_frames_rx": 16,
+          "messages_rx": 15,
+          "tls_bytes_rx": 8867,
+          "tls_bytes_tx": 3521,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.001996,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.481,
+          "error": "ConnectionError",
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1343,
+              "delivery_seconds": 0.259689
+            }
+          ]
+        },
+        "audio": {
+          "transport": "webrtc",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 373440,
+          "audio_samples_tx": 105968,
+          "data_channel": false
+        },
+        "gateway": {
+          "requests": 8,
+          "handler_executions": 1,
+          "denials": 7
+        }
+      },
+      "provider": null,
+      "raw_report_sha256": "f09eeb9396bc8e6e4c4c98117283eafbb29e66d9accd16b5d3a0adee0df24fb6"
+    },
+    {
+      "transport": "twilio-emulated",
+      "openai_agents": true,
+      "verified": true,
+      "independent_processes": true,
+      "provider_network_verified": false,
+      "protected_request_delivery": "audio only",
+      "caller": {
+        "pid": 95236,
+        "llm": {
+          "model": "gpt-6.1-sol",
+          "api_calls": {
+            "llm": 2,
+            "tts": 2,
+            "asr": 2
+          }
+        },
+        "sdk": {
+          "state": "verified",
+          "handshake_wall_seconds": 0.5229587500216439,
+          "data_frames_rx": 16,
+          "ack_frames_rx": 17,
+          "messages_rx": 15,
+          "tls_bytes_rx": 3521,
+          "tls_bytes_tx": 8866,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.001701,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.523,
+          "error": null,
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 517,
+              "delivery_seconds": 0.102364
+            },
+            {
+              "phase": "handshake",
+              "bytes": 1132,
+              "delivery_seconds": 0.197686
+            }
+          ]
+        },
+        "audio": {
+          "transport": "twilio-media-streams",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 399680,
+          "audio_samples_tx": 399680,
+          "playback_marks_acknowledged": 35
+        },
+        "results": [
+          {
+            "case": "valid",
+            "result": "allowed",
+            "reason": "authorized",
+            "verified": true,
+            "round_trip_seconds": 0.358791
+          },
+          {
+            "case": "scope",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 2.381631
+          },
+          {
+            "case": "replay",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.358743
+          },
+          {
+            "case": "other_customer",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.358495
+          },
+          {
+            "case": "expired",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.363837
+          },
+          {
+            "case": "revoked_grant",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.377467
+          },
+          {
+            "case": "wrong_key",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.339399
+          },
+          {
+            "case": "revoked_certificate",
+            "result": "denied",
+            "reason": "not_authorized",
+            "verified": true,
+            "round_trip_seconds": 0.108015
+          }
+        ]
+      },
+      "business": {
+        "pid": 95237,
+        "llm": {
+          "model": "gpt-6.1-sol",
+          "api_calls": {
+            "llm": 3,
+            "tts": 2,
+            "asr": 2
+          }
+        },
+        "sdk": {
+          "state": "failed",
+          "handshake_wall_seconds": 0.5234937079949304,
+          "data_frames_rx": 17,
+          "ack_frames_rx": 16,
+          "messages_rx": 15,
+          "tls_bytes_rx": 8866,
+          "tls_bytes_tx": 3521,
+          "retries": 0,
+          "duplicates_suppressed": 0,
+          "profile": "pcm",
+          "tls_handshake_cpu_seconds": 0.001716,
+          "session_reused": false,
+          "tls_version": "TLSv1.3",
+          "handshake_seconds": 0.441,
+          "error": "ConnectionError",
+          "modem_good_frames": 33,
+          "modem_bad_frames": 0,
+          "handshake_flights": [
+            {
+              "phase": "handshake",
+              "bytes": 1343,
+              "delivery_seconds": 0.220977
+            }
+          ]
+        },
+        "audio": {
+          "transport": "twilio-media-streams",
+          "profile": "pcm",
+          "codec": "PCMU",
+          "audio_samples_rx": 400800,
+          "audio_samples_tx": 400960,
+          "playback_marks_acknowledged": 35
+        },
+        "gateway": {
+          "requests": 8,
+          "handler_executions": 1,
+          "denials": 7
+        }
+      },
+      "provider": {
+        "emulated": true,
+        "audio_packets_forwarded": 5010,
+        "playback_marks": 70,
+        "permitted_worker_events": [
+          "media",
+          "mark"
+        ]
+      },
+      "raw_report_sha256": "f45b8c201a8af3f27f0fdc6bf0f9cf4c41108963bde936e701c5815ec45e8d63"
+    }
+  ],
+  "initialization_fix": {
+    "initial_openai_webrtc_handshake_seconds": 1.858,
+    "retries": 1,
+    "change": "Initialize OpenAI SDK and HTTP client before starting paced audio; final run has zero retries."
+  },
+  "installed_wheel_checks": [
+    {
+      "transport": "webrtc",
+      "verified": true,
+      "outside_checkout": true,
+      "clean_environment": true,
+      "handshake_seconds": 0.622031,
+      "gateway": {
+        "requests": 8,
+        "handler_executions": 1,
+        "denials": 7
+      },
+      "raw_report_sha256": "3a66ddd41ec6cbd1fa73847fd6167fb545a423bc4169c1f99d2ebc847009aa2b"
+    },
+    {
+      "transport": "twilio-emulated",
+      "verified": true,
+      "outside_checkout": true,
+      "clean_environment": true,
+      "handshake_seconds": 0.521586,
+      "gateway": {
+        "requests": 8,
+        "handler_executions": 1,
+        "denials": 7
+      },
+      "raw_report_sha256": "e7e8223ea52fd7e2943c0ed1c52672e991cebaf51988238d6cf8eb1bae27172c"
+    }
+  ]
+}

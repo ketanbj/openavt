@@ -36,7 +36,7 @@ def check_metadata(raw: bytes) -> None:
         raise SystemExit("Distribution name/version does not match OpenAVT")
     if metadata["License-Expression"] != "Apache-2.0":
         raise SystemExit("Distribution license does not match Apache-2.0")
-    if set(metadata.get_all("Provides-Extra", [])) != {"audio", "webrtc", "agents", "authority"}:
+    if set(metadata.get_all("Provides-Extra", [])) != {"audio", "webrtc", "agents", "authority", "twilio"}:
         raise SystemExit("Distribution is missing an optional integration extra")
     if "# OpenAVT" not in metadata.get_payload():
         raise SystemExit("Distribution README is missing the OpenAVT title")

@@ -64,18 +64,18 @@ Run **Actions → Release → Run workflow** with the default dry-run checkbox s
 This works before PyPI setup, including on an implementation branch, and makes
 no tags, releases or uploads to PyPI. It runs lint, all tests, source/wheel checks,
 a clean core-wheel TLS loopback, and installed-wheel live WebRTC and delegation
-demos. Download `distributions` and inspect the run summary for version and hashes.
+demos, plus independent SDK peers over WebRTC and emulated Twilio audio. Download `distributions` and inspect the run summary for version and hashes.
 
 To validate locally, start with an empty `dist/` and run:
 
 ```sh
-uv run --locked --extra webrtc --extra authority pytest -q
-uv run --locked --extra webrtc --extra authority ruff check src tests scripts
-uv run --locked --extra webrtc --extra authority ruff format --check src tests scripts
-uv run --locked --extra webrtc --extra authority python -m build
-uv run --locked --extra webrtc --extra authority twine check --strict dist/*
-uv run --locked --extra webrtc --extra authority python scripts/check_dist.py
-uv run --locked --extra webrtc --extra authority python scripts/smoke_wheel.py
+uv run --locked --extra webrtc --extra authority --extra twilio pytest -q
+uv run --locked --extra webrtc --extra authority --extra twilio ruff check src tests scripts
+uv run --locked --extra webrtc --extra authority --extra twilio ruff format --check src tests scripts
+uv run --locked --extra webrtc --extra authority --extra twilio python -m build
+uv run --locked --extra webrtc --extra authority --extra twilio twine check --strict dist/*
+uv run --locked --extra webrtc --extra authority --extra twilio python scripts/check_dist.py
+uv run --locked --extra webrtc --extra authority --extra twilio python scripts/smoke_wheel.py
 ```
 
 ## Recover and verify

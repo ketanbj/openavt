@@ -44,26 +44,25 @@ under the same read-only scope. Keys and grant credentials stay out of model inp
 
 ## Try the demo
 
-Requires Python 3.11+ and the `openssl` executable. No OpenAI key needed.
+Requires Python 3.11+. No OpenAI key needed.
 
 ```sh
 python -m pip install 'openavt[webrtc,authority]'
-openavt delegation-demo
+openavt sdk-demo
 ```
 
 The demo enrolls an agent, issues customer consent, and establishes a live local
 audio call. It accepts one authorized request and rejects seven misuse cases,
-including scope escalation, replay and revocation. It saves a report and audio
-under `output/`.
+including scope escalation, replay and revocation. The peers run in separate Python processes and save a report under `output/`.
 
 For **two real OpenAI voice agents**, [configure `OPENAI_API_KEY` locally](docs/quickstart.md#add-two-openai-voice-agents), then run:
 
 ```sh
 python -m pip install 'openavt[agents,authority]'
-openavt delegation-demo --agents
+openavt sdk-demo --agents
 ```
 
-[More demos and installation options →](docs/quickstart.md)
+[Integrate a voice agent or configure Twilio →](docs/integration.md) · [More demos →](docs/quickstart.md)
 
 ## Sub-second handshakes
 
@@ -72,7 +71,7 @@ Measured on an established local **64 kbps G.711 PCMU** audio call:
 | Run | Full mutual TLS handshake | Evidence |
 | --- | ---: | --- |
 | `main` CI, 5 fresh calls, October 11, 2026 | **0.561 s median · 0.581 s max** | [Benchmark](docs/performance/pcm-ci-main.json) |
-| Two OpenAI agents with AVA and customer delegation | **0.623 s** | [Demo results](docs/authority-verification.json) |
+| Two independent OpenAI SDK processes, WebRTC | **0.620 s** | [SDK results](docs/sdk-verification.json) |
 
 The timer includes both authenticated endpoints and the final audio ACK. It
 excludes certificate creation, call setup and LLM/speech time. These local results
@@ -88,7 +87,7 @@ Ordinary speech is outside the inner TLS session. There is no WebRTC data channe
 carrying the protected requests.
 
 Certificates prove registered account/key control. Customer authentication uses
-demo credentials; provider verification, real customer login and production CA
+demo credentials; verified provider identities, real customer login and production CA
 operations remain future work. Banking, payments and utility integrations are
 target use cases; the implemented demo returns a fixed read-only order result.
 [Trust boundaries →](docs/authority.md#trust-boundaries)
@@ -101,7 +100,8 @@ target use cases; the implemented demo returns a fixed read-only order result.
 | Install and choose a demo | [Quickstart](docs/quickstart.md) |
 | Understand certificates and customer consent | [Authority and delegation](docs/authority.md) |
 | Run a persistent authority | [AVA CLI walkthrough](docs/authority-cli.md) |
-| Integrate the transport | [Architecture and library usage](docs/architecture.md) |
+| Add a personal agent, business gateway or Twilio call | [SDK integration](docs/integration.md) |
+| Understand the transport | [Architecture](docs/architecture.md) |
 | Reproduce the timings | [Performance](docs/performance.md) |
 | Inspect tests and evidence | [Verification](docs/verification.md) |
 | Build and publish the package | [Releasing](docs/releasing.md) |

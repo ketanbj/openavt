@@ -46,7 +46,7 @@ class AudioTLS:
         self.new_data = asyncio.Event()
         self.ready = asyncio.Event()
         self.flush_lock = asyncio.Lock()
-        self.messages: asyncio.Queue = asyncio.Queue()
+        self.messages: asyncio.Queue = asyncio.Queue(maxsize=32)
         self.pending_json = bytearray()
         self.error: BaseException | None = None
         self.started_at: float | None = None
@@ -61,6 +61,8 @@ class AudioTLS:
         self.stats = {"data_frames_rx": 0, "ack_frames_rx": 0, "messages_rx": 0}
 
     def receive_frame(self, sequence: int, kind: int, payload: bytes) -> None:
+        if self.error:
+            return
         if kind == protocol.ACK:
             self.stats["ack_frames_rx"] += 1
             if sequence in self.acks:
@@ -69,6 +71,9 @@ class AudioTLS:
         self.stats["data_frames_rx"] += 1
         notify = False
         if sequence == self.next_rx:
+            if self.endpoint.incoming.pending + len(payload) > 65536:
+                self.fail(ValueError("TLS input exceeds buffer limit"))
+                return
             if self.started_at is None:
                 self.started_at = time.monotonic()
             self.endpoint.incoming.write(payload)
@@ -79,9 +84,31 @@ class AudioTLS:
             self.duplicates += 1
         else:
             return
+        if len(self.ack_tasks) >= 16:
+            self.fail(ValueError("audio ACK capacity exceeded"))
+            return
         task = asyncio.create_task(self._ack(sequence, notify))
         self.ack_tasks.add(task)
-        task.add_done_callback(self.ack_tasks.discard)
+        task.add_done_callback(self._ack_done)
+
+    def _ack_done(self, task: asyncio.Task) -> None:
+        self.ack_tasks.discard(task)
+        if not task.cancelled() and (error := task.exception()):
+            self.fail(error)
+
+    def fail(self, error: BaseException) -> None:
+        if self.error:
+            return
+        self.error = error
+        self.ready.set()
+        self.new_data.set()
+        # Fail promptly even when a peer has filled the application queue.
+        if self.messages.full():
+            while not self.messages.empty():
+                self.messages.get_nowait()
+        self.messages.put_nowait(error)
+        for event in self.acks.values():
+            event.set()
 
     async def _ack(self, sequence: int, notify: bool) -> None:
         try:
@@ -124,6 +151,8 @@ class AudioTLS:
                 await self.send_audio(audio, "modem")
                 try:
                     await asyncio.wait_for(event.wait(), timeout=0.75 if self.profile == "pcm" else 3.5)
+                    if self.error:
+                        raise self.error
                     self.next_tx += 1
                     self.tls_bytes_tx += len(payload)
                     return
@@ -158,6 +187,8 @@ class AudioTLS:
                 await self.new_data.wait()
                 self.log("tls_handshake_started")
             while True:
+                if self.error:
+                    raise self.error
                 self.new_data.clear()
                 if not self.endpoint.ready:
                     cpu_start = time.perf_counter()
@@ -185,7 +216,7 @@ class AudioTLS:
                         except ssl.SSLWantReadError:
                             break
                         if not plaintext:
-                            return
+                            raise ConnectionError("TLS peer closed")
                         self.pending_json.extend(plaintext)
                         if len(self.pending_json) > 65536:
                             raise ValueError("application message exceeds size limit")
@@ -202,16 +233,14 @@ class AudioTLS:
                                     k: "[redacted]" if k == "delegation" else v for k, v in message.items()
                                 },
                             )
-                            await self.messages.put(message)
+                            self.messages.put_nowait(message)
                     await self.flush()
                 if not self.new_data.is_set():
                     await self.new_data.wait()
         except asyncio.CancelledError:
             raise
         except Exception as error:
-            self.error = error
-            self.ready.set()
-            await self.messages.put(error)
+            self.fail(error)
             self.log("tls_error", error_type=type(error).__name__, reason=str(error))
 
     async def wait_ready(self) -> None:
@@ -234,6 +263,8 @@ class AudioTLS:
         )
 
     async def receive_json(self) -> dict:
+        if self.error and self.messages.empty():
+            raise self.error
         message = await asyncio.wait_for(self.messages.get(), timeout=150)
         if isinstance(message, BaseException):
             raise message
