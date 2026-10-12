@@ -28,7 +28,8 @@ have a `.dev` version. Release builds use the selected version, and the matching
 tag points to the tested `main` commit. No version-bump commits or release loops.
 Only successful CI in this repository for that exact main commit can publish.
 Runs are serialized and up to 100 can queue. An older commit cannot supersede
-an already released descendant; inspect and rerun failures before further releases.
+an already released descendant. If a tag has been reserved but publication failed,
+the next run resumes that exact version and source before selecting another version.
 
 ## One-time setup
 
@@ -79,7 +80,9 @@ uv run --locked --extra webrtc --extra authority python scripts/smoke_wheel.py
 
 ## Recover and verify
 
-If publishing fails, **rerun failed jobs** in Actions. A tag and draft GitHub
+If publishing fails, **rerun failed jobs** in Actions, or start a new Release run
+on `main` with dry-run disabled. A new run uses the current workflow helpers to
+recover a pending older release without moving its tag. A tag and draft GitHub
 release preserve the reserved version and exact artifact bytes. Rerunning the
 whole workflow for the same commit also reuses them. Do not delete or move a
 release tag to force a retry. Existing PyPI files must have matching SHA-256
