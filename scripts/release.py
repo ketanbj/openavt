@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -184,24 +185,40 @@ def artifacts(directory: Path, version: str) -> dict[str, str]:
     }
 
 
+class IncompletePublication(ValueError):
+    """The published metadata has not exposed both release files yet."""
+
+
 def verify_files(local: dict[str, str], remote: list[dict], complete: bool) -> None:
     published = {file["filename"]: file["digests"]["sha256"] for file in remote}
     if any(local.get(name) != digest for name, digest in published.items()):
         raise ValueError("PyPI already contains different artifacts; never overwrite or silently skip them")
     if complete and published != local:
-        raise ValueError("PyPI is missing expected release artifacts")
+        raise IncompletePublication("PyPI is missing expected release artifacts")
 
 
 def pypi(version: str, complete: bool) -> None:
-    try:
-        with urlopen(f"https://pypi.org/pypi/openavt/{version}/json", timeout=30) as response:
-            files = json.load(response)["urls"]
-    except HTTPError as error:
-        if error.code != 404:
-            raise
-        files = []
-    verify_files(artifacts(Path("dist"), version), files, complete)
-    print(f"PyPI artifact hashes verified ({len(files)}/2 present).")
+    local = artifacts(Path("dist"), version)
+    delays = (0, 2, 4, 8, 16, 20) if complete else (0,)
+    for attempt, delay in enumerate(delays):
+        if delay:
+            time.sleep(delay)
+        try:
+            with urlopen(f"https://pypi.org/pypi/openavt/{version}/json", timeout=30) as response:
+                files = json.load(response)["urls"]
+        except HTTPError as error:
+            if error.code != 404:
+                raise
+            files = []
+        try:
+            verify_files(local, files, complete)
+        except IncompletePublication:
+            if attempt == len(delays) - 1:
+                raise
+            print("Waiting for PyPI metadata to expose both release files.", flush=True)
+            continue
+        print(f"PyPI artifact hashes verified ({len(files)}/2 present).")
+        return
 
 
 def stage(version: str, sha: str) -> None:

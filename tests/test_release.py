@@ -331,3 +331,48 @@ def test_create_api_preserves_json_boolean_types(monkeypatch):
         "id": 123
     }
     assert json.loads(captured["input"]) == {"draft": True, "generate_release_notes": True}
+
+
+def test_complete_publication_waits_for_metadata_visibility(monkeypatch):
+    import io
+    import json
+
+    local = {"wheel": "abc", "source": "def"}
+    responses = iter([[], [remote("wheel", "abc")], [remote("wheel", "abc"), remote("source", "def")]])
+    sleeps = []
+    monkeypatch.setattr(release, "artifacts", lambda *args: local)
+    monkeypatch.setattr(
+        release, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps({"urls": next(responses)}).encode())
+    )
+    monkeypatch.setattr(release.time, "sleep", sleeps.append)
+    release.pypi("0.1.0", complete=True)
+    assert sleeps == [2, 4]
+
+
+def test_conflicting_artifact_is_never_retried(monkeypatch):
+    import io
+    import json
+
+    sleeps = []
+    monkeypatch.setattr(release, "artifacts", lambda *args: {"wheel": "abc"})
+    monkeypatch.setattr(
+        release,
+        "urlopen",
+        lambda *args, **kwargs: io.BytesIO(json.dumps({"urls": [remote("wheel", "wrong")]}).encode()),
+    )
+    monkeypatch.setattr(release.time, "sleep", sleeps.append)
+    with pytest.raises(ValueError, match="different artifacts"):
+        release.pypi("0.1.0", complete=True)
+    assert sleeps == []
+
+
+def test_metadata_visibility_wait_is_bounded(monkeypatch):
+    import io
+
+    sleeps = []
+    monkeypatch.setattr(release, "artifacts", lambda *args: {"wheel": "abc"})
+    monkeypatch.setattr(release, "urlopen", lambda *args, **kwargs: io.BytesIO(b'{"urls": []}'))
+    monkeypatch.setattr(release.time, "sleep", sleeps.append)
+    with pytest.raises(release.IncompletePublication):
+        release.pypi("0.1.0", complete=True)
+    assert sum(sleeps) == 50
