@@ -69,21 +69,23 @@ demos, plus independent SDK peers over WebRTC and emulated Twilio audio. Downloa
 To validate locally, start with an empty `dist/` and run:
 
 ```sh
-uv run --locked --extra webrtc --extra authority --extra twilio pytest -q
-uv run --locked --extra webrtc --extra authority --extra twilio ruff check src tests scripts
-uv run --locked --extra webrtc --extra authority --extra twilio ruff format --check src tests scripts
-uv run --locked --extra webrtc --extra authority --extra twilio python -m build
-uv run --locked --extra webrtc --extra authority --extra twilio twine check --strict dist/*
-uv run --locked --extra webrtc --extra authority --extra twilio python scripts/check_dist.py
-uv run --locked --extra webrtc --extra authority --extra twilio python scripts/smoke_wheel.py
+uv run --locked --all-extras pytest -q
+uv run --locked --all-extras ruff check src tests scripts
+uv run --locked --all-extras ruff format --check src tests scripts
+uv run --locked --all-extras python -m build
+uv run --locked --all-extras twine check --strict dist/*
+uv run --locked --all-extras python scripts/check_dist.py
+uv run --locked --all-extras python scripts/smoke_wheel.py
 ```
 
 ## Recover and verify
 
 If publishing fails, **rerun failed jobs** in Actions, or start a new Release run
 on `main` with dry-run disabled. A new run uses the current workflow helpers to
-recover a pending older release without moving its tag. A tag and draft GitHub
-release preserve the reserved version and exact artifact bytes. Rerunning the
+recover a pending older release without moving its tag. Dependencies and optional
+demos come from the selected source; archive checks compare metadata against that
+release's source `pyproject.toml`, so newly added extras do not break older retries.
+A tag and draft GitHub release preserve the reserved version and exact artifact bytes. Rerunning the
 whole workflow for the same commit also reuses them. Do not delete or move a
 release tag to force a retry. Existing PyPI files must have matching SHA-256
 hashes; partial uploads resume, conflicting uploads fail. After uploading, the
