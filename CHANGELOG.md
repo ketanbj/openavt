@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Recover older releases using their declared extras and available demos; validate
+  wheel/source metadata against the selected release's source configuration.
+
 - Add optional PAP draft 0.1 HTTPS sessions, DPoP, direct/device/mediated sign-in,
   account refresh/revocation, and operations v1 confirmation/recovery.
 - Bridge PAP authority to single-use grants bound to the voice certificate,
