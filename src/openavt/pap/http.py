@@ -33,7 +33,11 @@ class Reply:
 
 class HTTPS:
     def __init__(self, *, ssl_context: ssl.SSLContext | None = None, timeout: float = 15):
-        if ssl_context and (ssl_context.verify_mode != ssl.CERT_REQUIRED or not ssl_context.check_hostname):
+        if ssl_context is not None and (
+            not isinstance(ssl_context, ssl.SSLContext)
+            or ssl_context.verify_mode != ssl.CERT_REQUIRED
+            or not ssl_context.check_hostname
+        ):
             raise ValueError("HTTPS must verify the certificate and hostname")
         if not 0 < timeout <= 60:
             raise ValueError("invalid HTTPS timeout")

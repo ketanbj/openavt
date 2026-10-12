@@ -329,6 +329,9 @@ def test_transport_never_forwards_auth_on_redirect_and_respects_retry_after():
     context = ssl._create_unverified_context()
     with pytest.raises(ValueError):
         HTTPS(ssl_context=context)
+    for disable_verification in (False, True):
+        with pytest.raises(ValueError):
+            HTTPS(ssl_context=disable_verification)
 
 
 def test_random_user_ids_persist_per_issuer_and_are_private(tmp_path):
