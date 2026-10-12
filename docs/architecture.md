@@ -1,6 +1,6 @@
 # Architecture and library usage
 
-[README](../README.md) · [Quickstart](quickstart.md) · [Authority](authority.md)
+[README](../README.md) · [Business case](business.md) · [Quickstart](quickstart.md) · [Authority](authority.md)
 
 OpenAVT places an audio modem beneath OpenSSL's TLS byte stream. The application
 uses TLS-protected JSON requests; the modem delivers the TLS records through audio.
