@@ -2,21 +2,21 @@
 
 [README](../README.md) · [Performance](performance.md) · [Authority](authority.md)
 
-Requires Python 3.11+, `uv` and the `openssl` executable. The demos are tested on
-Linux and macOS. Run these commands from a checkout:
+Requires Python 3.11+ and `uv`. The older `live` and `loopback` demos also need
+the `openssl` executable. The demos are tested on Linux and macOS. Run these commands from a checkout:
 
 ```sh
 git clone https://github.com/ketanbj/openavt.git
 cd openavt
 ```
 
-## Start with enrollment and delegation
+## Start with two independent SDK peers
 
 ```sh
-uv run --locked --extra webrtc --extra authority openavt delegation-demo
+uv run --locked --extra webrtc --extra authority openavt sdk-demo
 ```
 
-This starts a temporary AVA service, enrolls and renews an agent certificate,
+This starts a temporary AVA service, enrolls an agent certificate and launches two independent processes,
 issues a customer grant, then verifies one allowed request and seven denials
 over live audio TLS. It needs no OpenAI key. See [the authorization cases](authority.md#demo-cases).
 
@@ -25,7 +25,7 @@ over live audio TLS. It needs no OpenAI key. See [the authorization cases](autho
 ```sh
 cp -n .env.example .env
 # Set OPENAI_API_KEY in .env locally.
-uv run --locked --extra agents --extra authority openavt delegation-demo --agents
+uv run --locked --extra agents --extra authority openavt sdk-demo --agents
 ```
 
 Each agent has its own LLM context, transcribes received speech and speaks with
@@ -45,6 +45,7 @@ are listed in [.env.example](../.env.example). `cp -n` preserves an existing `.e
 | Fast live audio TLS with a fixture certificate | `openavt live --transport-only --profile pcm` | `webrtc` |
 | Voice-band FSK instead of digital PCM | `openavt live --transport-only --profile voiceband` | `webrtc` |
 | Two OpenAI agents with a fixture grant | `openavt live --profile pcm` | `agents` |
+| Twilio format without provider credentials | `openavt sdk-demo --transport twilio-emulated` | `twilio,authority` |
 | Persistent enrollment service | `openavt ava --help` | `authority` |
 
 With `uv`, run a table command as `uv run --locked --extra webrtc openavt ...`,
@@ -58,7 +59,7 @@ In an activated virtual environment, install from the checkout:
 
 ```sh
 python -m pip install -e '.[webrtc,authority]'
-openavt delegation-demo
+openavt sdk-demo
 ```
 
 Use `.[agents,authority]` for the OpenAI demo. Other extras are `audio` for the
@@ -69,12 +70,14 @@ the installed `openavt` command. Released packages are available from
 
 ```sh
 python -m pip install 'openavt[webrtc,authority]'
-openavt delegation-demo
+openavt sdk-demo
 ```
+
+[SDK integration and real Twilio configuration →](integration.md)
 
 ## Reports and common issues
 
-Demos write `report.json`, WAV recordings and traces to unique directories in
+SDK demos write `report.json`; the older `live` and `delegation-demo` also capture WAV recordings and traces. Outputs use unique directories in
 `output/`. Temporary private keys are removed after the call. Tokens are redacted
 in delegation traces. A path passed with `--output PATH` must be empty.
 

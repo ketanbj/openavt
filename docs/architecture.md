@@ -26,13 +26,17 @@ protects the audio leg with SRTP. Recordings are evidence, not the delivery path
 | [`protocol.py`](../src/openavt/protocol.py) | Frame format, CRC, FSK waveform and WAV helpers |
 | [`channel.py`](../src/openavt/channel.py) | Ordered delivery, audio ACKs, retries and deduplication |
 | [`modem.py`](../src/openavt/modem.py) / [`pcm.py`](../src/openavt/pcm.py) | Streaming FSK / digital G.711 decoding |
-| [`transports/webrtc.py`](../src/openavt/transports/webrtc.py) | Live audio transport |
+| [`session.py`](../src/openavt/session.py) / [`gateway.py`](../src/openavt/gateway.py) | Framework-neutral SDK and mandatory business authorization |
+| [`transports/peer.py`](../src/openavt/transports/peer.py) / [`transports/twilio.py`](../src/openavt/transports/twilio.py) | Independent WebRTC endpoint and configurable provider audio |
 | [`authority/`](../src/openavt/authority/) | Enrollment and separate business delegation |
 | [`agents/openai.py`](../src/openavt/agents/openai.py) | Independent LLM contexts, transcription and speech |
 | [`demos/`](../src/openavt/demos/) | Call orchestration and demo policy |
 
 Core modules do not import the demos or OpenAI. Optional integrations load only
 when requested. The 0.x library API is experimental.
+
+Start with [the VoiceSession SDK and business Gateway](integration.md). The sections
+below describe the lower-level primitives for custom transports.
 
 ## Create a TLS endpoint
 

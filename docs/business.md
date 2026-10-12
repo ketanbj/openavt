@@ -64,8 +64,9 @@ payment integrations are future applications.
 The intended integration attaches OpenAVT to the audio boundary of a personal
 agent and a business voice system, then connects verified requests to the
 business's existing authorization and tools. The business endpoint can be a
-gateway serving an AI agent, IVR or human representative; that gateway integration
-is future work. Both sides need participating OpenAVT endpoints.
+gateway serving an AI agent, IVR or human representative. The framework-neutral
+SDK and business gateway are implemented; connecting a production contact center
+still requires its audio adapter and customer authorization integration. Both sides need participating OpenAVT endpoints.
 
 The emerging [Personal Agent Protocol](https://personalagentprotocol.org/docs/spec)
 already defines discovery, sign-in and permissions for digital business
@@ -75,7 +76,7 @@ useful for unsupported callers and suspicious authenticated behavior.
 
 ## Evaluate it today
 
-Run the [local demo](quickstart.md) and inspect the
+Run the [independent-process SDK demo](integration.md) and inspect the
 [authorization outcomes and handshake evidence](verification.md). A sensible
 first pilot would expose one read-only action, integrate real customer consent,
 and measure the chosen audio path before enabling sensitive operations.

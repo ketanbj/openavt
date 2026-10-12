@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add framework-neutral `Identity`, `VoiceSession` and business `Gateway`, with
+  explicit trust, schema validation, authorization, bounded waits and safe failures.
+- Add separate-process WebRTC and configurable Twilio audio adapters, signed
+  ingress, playback marks and a shared modem/speech scheduler.
+- Add `openavt sdk-demo`, two independent OpenAI workers, provider emulation,
+  optional live-call configuration, regression tests and installed-wheel checks.
+
 - Fix draft-release lookup and recover reserved versions using current workflow
   helpers without moving tags or changing their artifacts.
 - Verify PyPI artifact hashes while accepting the publishing action's attestation
