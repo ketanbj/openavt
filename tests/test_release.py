@@ -174,11 +174,17 @@ def stage_fixture(tmp_path, monkeypatch, *, existing=False):
             assert fields == {"ref": "refs/tags/v0.1.0", "sha": "good"}
             state["tag"] = True
             return {}
-        if "releases/tags" in endpoint:
+        if "/releases?" in endpoint:
             return (
-                {"tag_name": "v0.1.0", "assets": [{"name": name} for name in state["assets"]]}
+                [
+                    {
+                        "tag_name": "v0.1.0",
+                        "draft": True,
+                        "assets": [{"name": name} for name in state["assets"]],
+                    }
+                ]
                 if state["release"]
-                else None
+                else []
             )
         raise AssertionError(endpoint)
 
@@ -229,3 +235,48 @@ def test_existing_tag_on_different_commit_cannot_publish(tmp_path, monkeypatch):
     stage_fixture(tmp_path, monkeypatch, existing=True)
     with pytest.raises(ValueError, match="different commit"):
         release.stage("0.1.0", "evil")
+
+
+def test_draft_lookup_uses_paginated_listing_not_published_tag_endpoint(monkeypatch):
+    calls = []
+
+    def api(endpoint, **fields):
+        calls.append(endpoint)
+        assert "releases/tags" not in endpoint
+        if endpoint.endswith("&page=1"):
+            return [{"tag_name": f"v9.0.{n}"} for n in range(100)]
+        return [{"tag_name": "v0.1.0", "draft": True, "id": 410055240}]
+
+    monkeypatch.setattr(release, "api", api)
+    assert release.find_release("ketanbj/openavt", "v0.1.0")["id"] == 410055240
+    assert len(calls) == 2
+
+
+def test_resume_reserved_version_preserves_original_source_and_checks_its_ci(tmp_path, monkeypatch):
+    monkeypatch.setenv("GITHUB_REPOSITORY", "ketanbj/openavt")
+    monkeypatch.setenv("RELEASE_ENABLED", "true")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_dispatch")
+    monkeypatch.setenv("TARGET_SHA", "new-main")
+    event = tmp_path / "event.json"
+    event.write_text("{}")
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
+
+    def command(*args):
+        if args[:3] == ("git", "tag", "--list"):
+            return "v0.1.0"
+        if args[:2] == ("git", "rev-list"):
+            return "reserved-source"
+        raise AssertionError(args)
+
+    verified = []
+    output = []
+    monkeypatch.setattr(release, "command", command)
+    monkeypatch.setattr(release.subprocess, "run", lambda *args, **kwargs: None)
+    monkeypatch.setattr(release, "api", lambda *args, **kwargs: None)
+    monkeypatch.setattr(release, "require_main_ci", lambda repo, sha, *args: verified.append(sha))
+    monkeypatch.setattr(release, "output", lambda **values: output.append(values))
+    release.plan(dry_run=False)
+    assert verified == ["new-main", "reserved-source"]
+    assert output == [
+        {"version": "0.1.0", "tag": "v0.1.0", "sha": "reserved-source", "bump": "resume", "reused": "true"}
+    ]

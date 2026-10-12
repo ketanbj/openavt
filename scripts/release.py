@@ -107,22 +107,43 @@ def output(**values: str) -> None:
                 stream.write(f"{key}={value}\n")
 
 
+def find_release(repository: str, tag: str) -> dict | None:
+    """The by-tag endpoint excludes drafts; list releases with write access instead."""
+    page = 1
+    while True:
+        releases = api(f"repos/{repository}/releases?per_page=100&page={page}")
+        matches = [item for item in releases if item["tag_name"] == tag]
+        if len(matches) > 1:
+            raise ValueError("Multiple GitHub releases use the same tag")
+        if matches:
+            return matches[0]
+        if len(releases) < 100:
+            return None
+        page += 1
+
+
+def require_main_ci(repository: str, sha: str, run_id: int | None = None) -> None:
+    runs = (
+        [api(f"repos/{repository}/actions/runs/{run_id}")]
+        if run_id
+        else api(f"repos/{repository}/actions/workflows/ci.yml/runs?head_sha={sha}&per_page=100")[
+            "workflow_runs"
+        ]
+    )
+    if not any(successful_ci(run, sha, repository) for run in runs):
+        raise ValueError("Publishing requires successful main CI for this exact repository and commit")
+
+
 def plan(dry_run: bool) -> None:
     repository = os.environ["GITHUB_REPOSITORY"]
-    sha = command("git", "rev-parse", "HEAD")
+    sha = os.environ.get("TARGET_SHA") or command("git", "rev-parse", "HEAD")
     if not dry_run:
         if os.environ.get("RELEASE_ENABLED") != "true":
             raise ValueError("Set the RELEASE_ENABLED repository variable to true after configuring PyPI")
         subprocess.run(["git", "merge-base", "--is-ancestor", sha, "origin/main"], check=True)
         event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
-        if os.environ["GITHUB_EVENT_NAME"] == "workflow_run":
-            runs = [api(f"repos/{repository}/actions/runs/{event['workflow_run']['id']}")]
-        else:
-            runs = api(f"repos/{repository}/actions/workflows/ci.yml/runs?head_sha={sha}&per_page=100")[
-                "workflow_runs"
-            ]
-        if not any(successful_ci(run, sha, repository) for run in runs):
-            raise ValueError("Publishing requires successful main CI for this exact repository and commit")
+        run_id = event["workflow_run"]["id"] if os.environ["GITHUB_EVENT_NAME"] == "workflow_run" else None
+        require_main_ci(repository, sha, run_id)
     tags = {
         tag: command("git", "rev-list", "-n", "1", tag)
         for tag in command("git", "tag", "--list", "v*").splitlines()
@@ -132,10 +153,14 @@ def plan(dry_run: bool) -> None:
     reuse = sha in tags.values()
     if latest and not reuse:
         subprocess.run(["git", "merge-base", "--is-ancestor", tags[latest], sha], check=True)
-        if not dry_run:
-            previous = api(f"repos/{repository}/releases/tags/{latest}", missing_ok=True)
-            if previous is None or previous["draft"]:
-                raise ValueError(f"Finish publishing {latest} before releasing another commit")
+        # This endpoint deliberately checks publication, not draft visibility.
+        previous = api(f"repos/{repository}/releases/tags/{latest}", missing_ok=True)
+        if previous is None or previous["draft"]:
+            sha = tags[latest]
+            if not dry_run:
+                require_main_ci(repository, sha)
+            output(version=latest[1:], tag=latest, sha=sha, bump="resume", reused="true")
+            return
     revision = f"{latest}..{sha}" if latest else sha
     changes = []
     for commit in command("git", "rev-list", revision).splitlines():
@@ -190,7 +215,7 @@ def stage(version: str, sha: str) -> None:
             raise ValueError("Release tag points to a different commit")
     else:
         api(f"repos/{repository}/git/refs", ref=f"refs/tags/{tag}", sha=sha)
-    release = api(f"repos/{repository}/releases/tags/{tag}", missing_ok=True)
+    release = find_release(repository, tag)
     if release is None:
         subprocess.run(
             [
@@ -208,7 +233,9 @@ def stage(version: str, sha: str) -> None:
             ],
             check=True,
         )
-        release = api(f"repos/{repository}/releases/tags/{tag}")
+        release = find_release(repository, tag)
+        if release is None:
+            raise ValueError("Draft release was created but is not visible to the publishing token")
     expected = artifacts(Path("dist"), version)
     remote_names = {asset["name"] for asset in release["assets"]}
     if remote_names - expected.keys():
