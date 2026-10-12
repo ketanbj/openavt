@@ -64,7 +64,13 @@ openavt delegation-demo
 Use `.[agents,authority]` for the OpenAI demo. Other extras are `audio` for the
 streaming modem and `authority` for enrollment without audio dependencies.
 The core package has no pip dependencies. `python -m openavt` is equivalent to
-the installed `openavt` command. PyPI publication is pending.
+the installed `openavt` command. Released packages are available from
+[PyPI](https://pypi.org/project/openavt/):
+
+```sh
+python -m pip install 'openavt[webrtc,authority]'
+openavt delegation-demo
+```
 
 ## Reports and common issues
 

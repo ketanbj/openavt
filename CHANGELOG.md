@@ -1,6 +1,13 @@
 # OpenAVT changelog
 
-## 0.1.0 — unreleased
+## Unreleased
+
+- Fix draft-release lookup and recover reserved versions using current workflow
+  helpers without moving tags or changing their artifacts.
+- Verify PyPI artifact hashes while accepting the publishing action's attestation
+  sidecars, and document installation from PyPI.
+
+## 0.1.0 — October 11, 2026
 
 - Add CI-gated automatic GitHub/PyPI releases, semantic version selection,
   dry-run validation, and immutable artifact recovery through Trusted Publishing.

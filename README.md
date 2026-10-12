@@ -18,7 +18,14 @@ voice call; the business checks its permission before returning a result.
 ## Try the complete demo
 
 Requires Python 3.11+, `uv` and the `openssl` executable. No OpenAI key needed.
-Install from GitHub; PyPI publication is pending.
+Install the released package from [PyPI](https://pypi.org/project/openavt/):
+
+```sh
+python -m pip install 'openavt[webrtc,authority]'
+openavt delegation-demo
+```
+
+Or run from a GitHub checkout:
 
 ```sh
 git clone https://github.com/ketanbj/openavt.git

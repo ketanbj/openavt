@@ -148,6 +148,26 @@ def test_release_cannot_complete_with_missing_artifacts():
         release.verify_files({"wheel": "abc", "source": "def"}, [remote("wheel", "abc")], complete=True)
 
 
+def test_post_upload_verification_allows_only_expected_attestation_sidecars(tmp_path):
+    names = ["openavt-0.1.0-py3-none-any.whl", "openavt-0.1.0.tar.gz"]
+    for name in names:
+        (tmp_path / name).write_bytes(b"archive")
+    before = release.artifacts(tmp_path, "0.1.0")
+    for name in names:
+        (tmp_path / f"{name}.publish.attestation").write_text("{}")
+    assert release.artifacts(tmp_path, "0.1.0") == before
+    (tmp_path / "unexpected.publish.attestation").write_text("{}")
+    with pytest.raises(ValueError):
+        release.artifacts(tmp_path, "0.1.0")
+
+
+def test_attestation_sidecar_cannot_replace_a_missing_distribution(tmp_path):
+    (tmp_path / "openavt-0.1.0-py3-none-any.whl").write_bytes(b"archive")
+    (tmp_path / "openavt-0.1.0.tar.gz.publish.attestation").write_text("{}")
+    with pytest.raises(ValueError):
+        release.artifacts(tmp_path, "0.1.0")
+
+
 def stage_fixture(tmp_path, monkeypatch, *, existing=False):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("GITHUB_REPOSITORY", "ketanbj/openavt")
