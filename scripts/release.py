@@ -175,9 +175,13 @@ def plan(dry_run: bool) -> None:
 def artifacts(directory: Path, version: str) -> dict[str, str]:
     expected = {f"openavt-{version}-py3-none-any.whl", f"openavt-{version}.tar.gz"}
     paths = list(directory.iterdir())
-    if {path.name for path in paths} != expected:
+    names = {path.name for path in paths}
+    attestations = {f"{name}.publish.attestation" for name in expected}
+    if not expected.issubset(names) or names - expected - attestations:
         raise ValueError("Expected exactly the selected version's wheel and source archive")
-    return {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
+    return {
+        path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in paths if path.name in expected
+    }
 
 
 def verify_files(local: dict[str, str], remote: list[dict], complete: bool) -> None:
