@@ -179,6 +179,7 @@ def stage_fixture(tmp_path, monkeypatch, *, existing=False):
     state = {
         "tag": existing,
         "release": existing,
+        "list_calls": 0,
         "assets": {names[0]: b"canonical wheel"} if existing else {},
     }
     calls = []
@@ -194,33 +195,44 @@ def stage_fixture(tmp_path, monkeypatch, *, existing=False):
             assert fields == {"ref": "refs/tags/v0.1.0", "sha": "good"}
             state["tag"] = True
             return {}
+        if endpoint.endswith("/releases") and fields:
+            assert fields == {
+                "tag_name": "v0.1.0",
+                "target_commitish": "good",
+                "name": "OpenAVT 0.1.0",
+                "draft": True,
+                "generate_release_notes": True,
+            }
+            state["release"] = True
+            return {"id": 123, "tag_name": "v0.1.0", "draft": True, "assets": []}
         if "/releases?" in endpoint:
+            state["list_calls"] += 1
+            # Simulate stale draft listings even after the create API succeeded.
             return (
                 [
                     {
+                        "id": 123,
                         "tag_name": "v0.1.0",
                         "draft": True,
                         "assets": [{"name": name} for name in state["assets"]],
                     }
                 ]
-                if state["release"]
+                if existing
                 else []
             )
         raise AssertionError(endpoint)
 
     def run(args, **kwargs):
         calls.append(args)
-        assert args[:2] == ["gh", "release"]
-        if args[2] == "create":
-            assert "--draft" in args and "--verify-tag" in args
-            assert not state["release"]
-            state["release"] = True
-        elif args[2] == "download":
+        if args[:2] == ["gh", "release"] and args[2] == "download":
             destination = Path(args[args.index("--dir") + 1])
             for name, data in state["assets"].items():
                 (destination / name).write_bytes(data)
-        elif args[2] == "upload":
-            source = Path(args[-1])
+        elif args[:2] == ["gh", "api"]:
+            assert args[-1].startswith(
+                "https://uploads.github.com/repos/ketanbj/openavt/releases/123/assets?name="
+            )
+            source = Path(args[args.index("--input") + 1])
             assert source.name not in state["assets"]
             state["assets"][source.name] = source.read_bytes()
         else:
@@ -236,7 +248,8 @@ def test_first_publication_creates_draft_and_freezes_both_artifacts(tmp_path, mo
     release.stage("0.1.0", "good")
     assert state["tag"] and state["release"]
     assert set(state["assets"]) == {path.name for path in directory.iterdir()}
-    assert [call[2] for call in calls] == ["create", "upload", "upload"]
+    assert [call[1] for call in calls] == ["api", "api"]
+    assert state["list_calls"] == 1
 
 
 def test_partial_github_upload_recovers_canonical_bytes_without_replacing_them(tmp_path, monkeypatch):
@@ -244,7 +257,7 @@ def test_partial_github_upload_recovers_canonical_bytes_without_replacing_them(t
     release.stage("0.1.0", "good")
     assert (directory / "openavt-0.1.0-py3-none-any.whl").read_bytes() == b"canonical wheel"
     assert len(state["assets"]) == 2
-    assert [call[2] for call in calls] == ["download", "upload"]
+    assert [call[1] for call in calls] == ["release", "api"]
     # A complete retry downloads the same bytes and performs no further uploads.
     calls.clear()
     release.stage("0.1.0", "good")
@@ -300,3 +313,21 @@ def test_resume_reserved_version_preserves_original_source_and_checks_its_ci(tmp
     assert output == [
         {"version": "0.1.0", "tag": "v0.1.0", "sha": "reserved-source", "bump": "resume", "reused": "true"}
     ]
+
+
+def test_create_api_preserves_json_boolean_types(monkeypatch):
+    import json
+    from types import SimpleNamespace
+
+    captured = {}
+
+    def run(args, **kwargs):
+        captured.update(kwargs)
+        assert args[-2:] == ["--input", "-"]
+        return SimpleNamespace(returncode=0, stdout='{"id": 123}', stderr="")
+
+    monkeypatch.setattr(release.subprocess, "run", run)
+    assert release.api("repos/ketanbj/openavt/releases", draft=True, generate_release_notes=True) == {
+        "id": 123
+    }
+    assert json.loads(captured["input"]) == {"draft": True, "generate_release_notes": True}

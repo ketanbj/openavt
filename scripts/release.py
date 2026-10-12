@@ -19,13 +19,13 @@ def command(*args: str) -> str:
     return subprocess.check_output(args, text=True).strip()
 
 
-def api(endpoint: str, *, missing_ok: bool = False, **fields: str) -> object:
+def api(endpoint: str, *, missing_ok: bool = False, **fields: object) -> object:
     args = ["gh", "api", endpoint]
     if fields:
-        args += ["--method", "POST"]
-        for key, value in fields.items():
-            args += ["-f", f"{key}={value}"]
-    result = subprocess.run(args, text=True, capture_output=True)
+        args += ["--method", "POST", "--input", "-"]
+    result = subprocess.run(
+        args, input=json.dumps(fields) if fields else None, text=True, capture_output=True
+    )
     if result.returncode:
         if missing_ok and "HTTP 404" in result.stderr:
             return None
@@ -221,25 +221,15 @@ def stage(version: str, sha: str) -> None:
         api(f"repos/{repository}/git/refs", ref=f"refs/tags/{tag}", sha=sha)
     release = find_release(repository, tag)
     if release is None:
-        subprocess.run(
-            [
-                "gh",
-                "release",
-                "create",
-                tag,
-                "--draft",
-                "--verify-tag",
-                "--target",
-                sha,
-                "--title",
-                f"OpenAVT {version}",
-                "--generate-notes",
-            ],
-            check=True,
+        # Use the create response directly: draft listing can lag behind creation.
+        release = api(
+            f"repos/{repository}/releases",
+            tag_name=tag,
+            target_commitish=sha,
+            name=f"OpenAVT {version}",
+            draft=True,
+            generate_release_notes=True,
         )
-        release = find_release(repository, tag)
-        if release is None:
-            raise ValueError("Draft release was created but is not visible to the publishing token")
     expected = artifacts(Path("dist"), version)
     remote_names = {asset["name"] for asset in release["assets"]}
     if remote_names - expected.keys():
@@ -252,7 +242,22 @@ def stage(version: str, sha: str) -> None:
             if name in remote_names:
                 Path("dist", name).write_bytes(Path(temporary, name).read_bytes())
             else:
-                subprocess.run(["gh", "release", "upload", tag, str(Path("dist", name))], check=True)
+                subprocess.run(
+                    [
+                        "gh",
+                        "api",
+                        "--method",
+                        "POST",
+                        "--header",
+                        "Content-Type: application/octet-stream",
+                        "--input",
+                        str(Path("dist", name)),
+                        f"https://uploads.github.com/repos/{repository}/releases/{release['id']}/assets?name={name}",
+                    ],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                )
+    output(release_id=str(release["id"]))
     print(f"Staged immutable release artifacts for {tag} at {sha}.")
 
 
