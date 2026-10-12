@@ -130,6 +130,7 @@ jobs:
           name: distributions
           path: dist/
       - name: Stage draft GitHub release and recover identical artifacts on retry
+        id: stage
         run: python scripts/release.py stage "$VERSION" "$SHA"
       - name: Validate staged archives and existing PyPI hashes
         run: |
@@ -140,6 +141,8 @@ jobs:
         with:
           skip-existing: true # Only after verifying existing files have identical SHA-256 hashes.
       - name: Verify publication and publish GitHub release
+        env:
+          RELEASE_ID: ${{ steps.stage.outputs.release_id }}
         run: |
           python scripts/release.py verify-pypi "$VERSION" --complete
-          gh release edit "v$VERSION" --draft=false
+          gh api --method PATCH "repos/$GH_REPO/releases/$RELEASE_ID" -F draft=false > /dev/null

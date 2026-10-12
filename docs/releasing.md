@@ -86,7 +86,9 @@ recover a pending older release without moving its tag. A tag and draft GitHub
 release preserve the reserved version and exact artifact bytes. Rerunning the
 whole workflow for the same commit also reuses them. Do not delete or move a
 release tag to force a retry. Existing PyPI files must have matching SHA-256
-hashes; partial uploads resume, conflicting uploads fail. The GitHub release is
+hashes; partial uploads resume, conflicting uploads fail. After uploading, the
+verifier waits up to 50 seconds for both files to appear in PyPI metadata; a hash
+mismatch fails immediately. The GitHub release is
 published only after both files are verified on PyPI. A failed publish leaves a
 draft, not a successful public release.
 

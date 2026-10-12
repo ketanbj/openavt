@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -19,13 +20,13 @@ def command(*args: str) -> str:
     return subprocess.check_output(args, text=True).strip()
 
 
-def api(endpoint: str, *, missing_ok: bool = False, **fields: str) -> object:
+def api(endpoint: str, *, missing_ok: bool = False, **fields: object) -> object:
     args = ["gh", "api", endpoint]
     if fields:
-        args += ["--method", "POST"]
-        for key, value in fields.items():
-            args += ["-f", f"{key}={value}"]
-    result = subprocess.run(args, text=True, capture_output=True)
+        args += ["--method", "POST", "--input", "-"]
+    result = subprocess.run(
+        args, input=json.dumps(fields) if fields else None, text=True, capture_output=True
+    )
     if result.returncode:
         if missing_ok and "HTTP 404" in result.stderr:
             return None
@@ -184,24 +185,40 @@ def artifacts(directory: Path, version: str) -> dict[str, str]:
     }
 
 
+class IncompletePublication(ValueError):
+    """The published metadata has not exposed both release files yet."""
+
+
 def verify_files(local: dict[str, str], remote: list[dict], complete: bool) -> None:
     published = {file["filename"]: file["digests"]["sha256"] for file in remote}
     if any(local.get(name) != digest for name, digest in published.items()):
         raise ValueError("PyPI already contains different artifacts; never overwrite or silently skip them")
     if complete and published != local:
-        raise ValueError("PyPI is missing expected release artifacts")
+        raise IncompletePublication("PyPI is missing expected release artifacts")
 
 
 def pypi(version: str, complete: bool) -> None:
-    try:
-        with urlopen(f"https://pypi.org/pypi/openavt/{version}/json", timeout=30) as response:
-            files = json.load(response)["urls"]
-    except HTTPError as error:
-        if error.code != 404:
-            raise
-        files = []
-    verify_files(artifacts(Path("dist"), version), files, complete)
-    print(f"PyPI artifact hashes verified ({len(files)}/2 present).")
+    local = artifacts(Path("dist"), version)
+    delays = (0, 2, 4, 8, 16, 20) if complete else (0,)
+    for attempt, delay in enumerate(delays):
+        if delay:
+            time.sleep(delay)
+        try:
+            with urlopen(f"https://pypi.org/pypi/openavt/{version}/json", timeout=30) as response:
+                files = json.load(response)["urls"]
+        except HTTPError as error:
+            if error.code != 404:
+                raise
+            files = []
+        try:
+            verify_files(local, files, complete)
+        except IncompletePublication:
+            if attempt == len(delays) - 1:
+                raise
+            print("Waiting for PyPI metadata to expose both release files.", flush=True)
+            continue
+        print(f"PyPI artifact hashes verified ({len(files)}/2 present).")
+        return
 
 
 def stage(version: str, sha: str) -> None:
@@ -221,25 +238,15 @@ def stage(version: str, sha: str) -> None:
         api(f"repos/{repository}/git/refs", ref=f"refs/tags/{tag}", sha=sha)
     release = find_release(repository, tag)
     if release is None:
-        subprocess.run(
-            [
-                "gh",
-                "release",
-                "create",
-                tag,
-                "--draft",
-                "--verify-tag",
-                "--target",
-                sha,
-                "--title",
-                f"OpenAVT {version}",
-                "--generate-notes",
-            ],
-            check=True,
+        # Use the create response directly: draft listing can lag behind creation.
+        release = api(
+            f"repos/{repository}/releases",
+            tag_name=tag,
+            target_commitish=sha,
+            name=f"OpenAVT {version}",
+            draft=True,
+            generate_release_notes=True,
         )
-        release = find_release(repository, tag)
-        if release is None:
-            raise ValueError("Draft release was created but is not visible to the publishing token")
     expected = artifacts(Path("dist"), version)
     remote_names = {asset["name"] for asset in release["assets"]}
     if remote_names - expected.keys():
@@ -252,7 +259,22 @@ def stage(version: str, sha: str) -> None:
             if name in remote_names:
                 Path("dist", name).write_bytes(Path(temporary, name).read_bytes())
             else:
-                subprocess.run(["gh", "release", "upload", tag, str(Path("dist", name))], check=True)
+                subprocess.run(
+                    [
+                        "gh",
+                        "api",
+                        "--method",
+                        "POST",
+                        "--header",
+                        "Content-Type: application/octet-stream",
+                        "--input",
+                        str(Path("dist", name)),
+                        f"https://uploads.github.com/repos/{repository}/releases/{release['id']}/assets?name={name}",
+                    ],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                )
+    output(release_id=str(release["id"]))
     print(f"Staged immutable release artifacts for {tag} at {sha}.")
 
 
