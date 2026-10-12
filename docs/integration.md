@@ -186,3 +186,9 @@ Production identity verification, user login, public discovery, remote signaling
 CA availability and durable transaction reconciliation remain separate work.
 Ordinary speech is outside inner TLS and remains untrusted. Protect other agent
 tools and speech output as well as the business gateway.
+
+## PAP and fraud integrations
+
+Use the optional [PAP session bridge](pap.md) to carry existing digital account
+authority into a call. Attach a [fraud adapter](risk.md) for authenticated behavior
+checks, or use it directly for unsupported callers. Core OpenAVT remains standalone.

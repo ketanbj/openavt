@@ -19,6 +19,7 @@ from openavt import __version__
         (["ava", "--help"], "enroll"),
         (["delegation-demo", "--help"], "--agents"),
         (["sdk-demo", "--help"], "twilio-live"),
+        (["pap-demo", "--help"], "--namespace"),
     ],
 )
 def test_installed_module_cli(arguments, expected):

@@ -13,7 +13,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--version", action="version", version=f"openavt {__version__}")
     parser.add_argument(
         "command",
-        choices=("loopback", "live", "ava", "delegation-demo", "sdk-demo"),
+        choices=("loopback", "live", "ava", "delegation-demo", "sdk-demo", "pap-demo"),
         nargs="?",
         help="WAV proof, live call, authority, delegated access, or independent SDK agents",
     )
@@ -34,7 +34,9 @@ def main(argv: list[str] | None = None) -> None:
             raise
     else:
         try:
-            if options.command == "sdk-demo":
+            if options.command == "pap-demo":
+                from openavt.demos.pap import main as run
+            elif options.command == "sdk-demo":
                 from openavt.demos.sdk import main as run
             elif options.command == "delegation-demo":
                 from openavt.demos.delegation import main as run
@@ -64,11 +66,14 @@ def main(argv: list[str] | None = None) -> None:
                 "cryptography",
                 "twilio",
                 "aiohttp",
+                "jwt",
             }
             if error.name and error.name.split(".")[0] in dependencies:
                 extra = "webrtc" if "--transport-only" in arguments else "agents"
                 if options.command == "delegation-demo":
                     extra = "agents,authority" if "--agents" in arguments else "webrtc,authority"
+                if options.command == "pap-demo":
+                    extra = "pap,webrtc"
                 if options.command == "sdk-demo":
                     transport_extra = (
                         "twilio" if any(a.startswith("twilio-") for a in arguments) else "webrtc"

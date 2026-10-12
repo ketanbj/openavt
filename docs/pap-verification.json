@@ -1,0 +1,40 @@
+{
+  "verified": true,
+  "pap_draft": "0.1 (2026-10-09)",
+  "operations_version": "1",
+  "extension_namespace": "example.test/openavt-voice",
+  "reference_only": true,
+  "external_provider_interoperability_verified": false,
+  "simulated_user_approval": true,
+  "https_certificate_verified": true,
+  "transport": "WebRTC audio, PCM/G.711",
+  "tls_handshake_seconds": 0.581,
+  "webrtc_data_channel": false,
+  "protected_request_delivery": "audio only; session and account tokens stay on HTTPS",
+  "read_allowed": true,
+  "write_proposed_without_execution": true,
+  "https_confirmation_effects": 1,
+  "same_operation_retry_and_recovery": true,
+  "authenticated_risk_block": true,
+  "signed_out_grant_denied": true,
+  "unsupported_caller_risk": "review",
+  "risk_audio_chunks": 143,
+  "gateway": {
+    "requests": 4,
+    "handler_executions": 2,
+    "denials": 2
+  },
+  "dpop_nonce_challenges": 4,
+  "elapsed_epoch": 1791779972,
+  "verification": {
+    "date": "2026-10-12",
+    "python": "3.13.10",
+    "platform": "Darwin",
+    "tests_passed": 197,
+    "test_command": "pytest -q",
+    "reproduce": "pip install 'openavt[pap,webrtc]' && openavt pap-demo",
+    "aiohttp": "3.14.5",
+    "PyJWT": "2.15.1",
+    "aiortc": "1.15.0"
+  }
+}

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add optional PAP draft 0.1 HTTPS sessions, DPoP, direct/device/mediated sign-in,
+  account refresh/revocation, and operations v1 confirmation/recovery.
+- Bridge PAP authority to single-use grants bound to the voice certificate,
+  live challenge and exact request; recheck permissions before execution.
+- Add vendor-neutral fraud hooks for unsupported callers and authenticated
+  requests, bounded observation and explicit outage behavior.
+- Add `openavt pap-demo`, local HTTPS/audio evidence and negative wire tests.
+
 - Add framework-neutral `Identity`, `VoiceSession` and business `Gateway`, with
   explicit trust, schema validation, authorization, bounded waits and safe failures.
 - Add separate-process WebRTC and configurable Twilio audio adapters, signed

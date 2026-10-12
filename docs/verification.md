@@ -62,3 +62,13 @@ verification of Internet/PSTN interoperability.
 Public JSON omits credentials, delegation tokens and transcripts. Raw reports
 and recordings stay in ignored `output/`; capture hashes identify those local
 artifacts but do not make them independently inspectable.
+
+## PAP and risk profile
+
+[Local HTTPS/audio evidence](pap-verification.json) covers PAP draft 0.1 sessions,
+PKCE, DPoP nonce handling, audio authorization, operations confirmation/recovery,
+risk blocking and sign-out. `tests/test_pap.py` uses a separate PyJWT wire verifier
+and checks tampering, replay, scope, ownership, expiry and extension negotiation.
+`tests/test_risk.py` checks bounded observation, outage behavior and authority
+separation. Run `openavt pap-demo` to reproduce. This is a local reference profile;
+external PAP providers and fraud vendor integrations have not been certified.

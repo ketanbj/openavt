@@ -54,7 +54,20 @@ def main() -> None:
         assert report["tls_version"] == "TLSv1.3"
         assert report["result"] == "allowed"
         assert report["response"]["status"] == "shipped"
-    print("Core wheel installed cleanly and completed mutual TLS outside the checkout.")
+        subprocess.run([str(python), "-m", "pip", "install", f"{wheel}[pap]"], check=True)
+        subprocess.run(
+            [
+                str(python),
+                "-I",
+                "-c",
+                "import importlib.util; from openavt.pap import PAPClient, VoiceBridge; from openavt.risk import RiskMonitor; assert importlib.util.find_spec('numpy') is None; assert importlib.util.find_spec('openai') is None",
+            ],
+            cwd=work,
+            check=True,
+        )
+    print(
+        "Core and PAP-only wheel imports verified. Core wheel installed cleanly and completed mutual TLS outside the checkout."
+    )
 
 
 if __name__ == "__main__":
