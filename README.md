@@ -64,6 +64,27 @@ openavt sdk-demo --agents
 
 [Integrate a voice agent or configure Twilio →](docs/integration.md) · [More demos →](docs/quickstart.md)
 
+## PAP sessions and fraud monitoring
+
+OpenAVT works **alongside Personal Agent Protocol (PAP/Poppy)**: PAP supplies
+HTTPS discovery, sign-in and account permissions; OpenAVT binds those permissions
+to an authenticated audio call and exact requests. The optional adapter targets
+PAP draft 0.1 with a negotiated custom voice extension.
+
+```sh
+python -m pip install 'openavt[pap,webrtc]'
+openavt pap-demo
+```
+
+This local demo reads an order over audio, proposes an exchange, and confirms it
+through PAP's HTTPS operations endpoint exactly once. It also verifies fraud
+blocking and sign-out before execution. [Integration and supported profile →](docs/pap.md)
+
+A vendor-neutral [fraud adapter](docs/risk.md) supports unsupported callers and
+suspicious authenticated requests. It can restrict execution without expanding
+permissions. Provider-specific integrations and external PAP interoperability
+still require validation with those providers.
+
 ## Sub-second handshakes
 
 Measured on an established local **64 kbps G.711 PCMU** audio call:
@@ -89,7 +110,8 @@ carrying the protected requests.
 Certificates prove registered account/key control. Customer authentication uses
 demo credentials; verified provider identities, real customer login and production CA
 operations remain future work. Banking, payments and utility integrations are
-target use cases; the implemented demo returns a fixed read-only order result.
+target use cases; the standalone demo returns a fixed order result, and the PAP demo adds a
+simulated exchange with explicit HTTPS confirmation.
 [Trust boundaries →](docs/authority.md#trust-boundaries)
 
 ## Documentation
@@ -101,6 +123,8 @@ target use cases; the implemented demo returns a fixed read-only order result.
 | Understand certificates and customer consent | [Authority and delegation](docs/authority.md) |
 | Run a persistent authority | [AVA CLI walkthrough](docs/authority-cli.md) |
 | Add a personal agent, business gateway or Twilio call | [SDK integration](docs/integration.md) |
+| Connect PAP sessions and voice authorization | [PAP adapter](docs/pap.md) |
+| Add voice detection and fraud monitoring | [Fraud adapters](docs/risk.md) |
 | Understand the transport | [Architecture](docs/architecture.md) |
 | Reproduce the timings | [Performance](docs/performance.md) |
 | Inspect tests and evidence | [Verification](docs/verification.md) |

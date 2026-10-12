@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import time
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
@@ -12,8 +14,19 @@ import numpy as np
 
 from openavt.channel import AudioTLS
 from openavt.identity import Identity
+from openavt.risk import CallContext, RiskMonitor
 from openavt.tls import Endpoint
 from openavt.transports.base import AudioAdapter
+
+
+@dataclass(frozen=True)
+class GrantRequest:
+    request_id: str
+    nonce: str
+    action: str
+    resource: str
+    customer: str
+    arguments: dict
 
 
 class ProtocolError(ValueError):
@@ -65,6 +78,7 @@ class VoiceSession:
         request_timeout: float = 15,
         on_speech: Callable | None = None,
         log: Callable | None = None,
+        monitor: RiskMonitor | None = None,
     ):
         if not server and not expected_peer:
             raise ValueError("a client must specify the expected service hostname")
@@ -77,6 +91,8 @@ class VoiceSession:
         self.on_speech = on_speech
         self.log = log or (lambda *_args, **_fields: None)
         self.state = "new"
+        self.monitor = monitor
+        self.call_id = uuid.uuid4().hex
         self._task: asyncio.Task | None = None
         self._lock = asyncio.Lock()
         self._suppress_until = 0.0
@@ -107,6 +123,8 @@ class VoiceSession:
         if samples.ndim != 1 or len(samples) > 16000:
             self.channel.fail(ProtocolError("invalid audio chunk"))
             return
+        if self.monitor and len(samples):
+            self.monitor.feed(self.risk_context, samples.astype("<i2").tobytes())
         frames = self.decoder.feed(samples)
         for sequence, kind, payload in frames:
             self.channel.receive_frame(sequence, kind, payload)
@@ -125,6 +143,8 @@ class VoiceSession:
             raise RuntimeError("a session cannot be reopened")
         self.state = "authenticating"
         try:
+            if self.monitor:
+                self.monitor.start()
             await asyncio.wait_for(
                 self.audio.start(self._receive_audio, self._disconnected), self.handshake_timeout
             )
@@ -140,6 +160,12 @@ class VoiceSession:
 
     async def __aexit__(self, *_args) -> None:
         await self.close()
+
+    @property
+    def risk_context(self) -> CallContext:
+        verified = self.state == "verified" and not self.channel.error
+        fingerprint = hashlib.sha256(self.peer_certificate).hexdigest() if verified else None
+        return CallContext(self.call_id, verified, fingerprint)
 
     @property
     def peer_certificate(self) -> bytes:
@@ -158,7 +184,7 @@ class VoiceSession:
         *,
         resource: str,
         customer: str,
-        grant: str,
+        grant: str | Callable,
         arguments: dict | None = None,
         timeout: float | None = None,
     ) -> dict:
@@ -166,7 +192,7 @@ class VoiceSession:
             raise RuntimeError("requests are initiated by the client")
         for field, value in (("action", action), ("resource", resource), ("customer", customer)):
             identifier(value, field)
-        if not isinstance(grant, str) or not 1 <= len(grant) <= 4096:
+        if not callable(grant) and (not isinstance(grant, str) or not 1 <= len(grant) <= 4096):
             raise ValueError("invalid grant")
         if arguments is not None and not isinstance(arguments, dict):
             raise ValueError("arguments must be an object")
@@ -195,6 +221,15 @@ class VoiceSession:
                     ):
                         raise ProtocolError("unexpected authorization challenge")
                     nonce = identifier(challenge["nonce"], "nonce")
+                    credential = (
+                        await grant(
+                            GrantRequest(request_id, nonce, action, resource, customer, arguments or {})
+                        )
+                        if callable(grant)
+                        else grant
+                    )
+                    if not isinstance(credential, str) or not 1 <= len(credential) <= 4096:
+                        raise ProtocolError("invalid issued voice grant")
                     message = {
                         "v": 1,
                         "type": "request",
@@ -203,7 +238,7 @@ class VoiceSession:
                         "resource": resource,
                         "customer": customer,
                         "nonce": nonce,
-                        "grant": grant,
+                        "grant": credential,
                         "arguments": arguments or {},
                     }
                     submitted = True
@@ -243,5 +278,9 @@ class VoiceSession:
         if self._task:
             self._task.cancel()
             await asyncio.gather(self._task, return_exceptions=True)
-        await self.channel.close()
-        await self.audio.close()
+        try:
+            await self.channel.close()
+            await self.audio.close()
+        finally:
+            if self.monitor:
+                await self.monitor.close()

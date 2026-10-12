@@ -6,6 +6,7 @@ import asyncio
 from dataclasses import dataclass, field
 from typing import Awaitable, Callable, Protocol
 
+from openavt.risk import RequestSignal, RiskOutcome
 from openavt.session import ProtocolError, VoiceSession, identifier
 
 
@@ -46,7 +47,11 @@ class AuthorizationPolicy(Protocol):
     async def challenge(self, peer_certificate: bytes) -> str: ...
 
     async def authorize(self, peer_certificate: bytes, request: Request) -> dict:
-        """Return verified claims or raise PermissionError. Recheck current permission."""
+        """Return verified claims or raise PermissionError. Recheck current permission.
+
+        Policies may also implement revalidate(peer, request, claims) to recheck
+        authority immediately before the handler, after risk assessment.
+        """
 
 
 class Gateway:
@@ -138,20 +143,46 @@ class Gateway:
                         except Exception:
                             response.update(result="error", reason="authorization_unavailable")
                         else:
-                            try:
-                                self.executions += 1
-                                data = await handler(request, claims)
-                                if not isinstance(data, dict):
-                                    raise TypeError("a handler must return an object")
-                                response.update(result="allowed", reason="authorized", data=data)
-                            except Exception:
-                                # Do not reflect backend exception details or secrets to the caller.
-                                response.update(result="error", reason="handler_failed")
+                            assessment = None
+                            if session.monitor:
+                                assessment = await session.monitor.assess(
+                                    session.risk_context,
+                                    RequestSignal(
+                                        request.id, request.action, request.resource, request.customer
+                                    ),
+                                )
+                            if assessment and assessment.outcome != RiskOutcome.CONTINUE:
+                                response["reason"] = "risk_" + (
+                                    "unavailable"
+                                    if assessment.reason == "unavailable"
+                                    else assessment.outcome.value
+                                )
+                            else:
+                                try:
+                                    revalidate = getattr(self.policy, "revalidate", None)
+                                    if revalidate:
+                                        await revalidate(peer, request, claims)
+                                except PermissionError:
+                                    pass
+                                except Exception:
+                                    response.update(result="error", reason="authorization_unavailable")
+                                else:
+                                    await self._execute(handler, request, claims, response)
                 if response["result"] == "denied":
                     self.denials += 1
                 await session.channel.send_json(response)
             if on_response:
                 await on_response(request, response)
+
+    async def _execute(self, handler, request, claims, response):
+        try:
+            self.executions += 1
+            data = await handler(request, claims)
+            if not isinstance(data, dict):
+                raise TypeError("a handler must return an object")
+            response.update(result="allowed", reason="authorized", data=data)
+        except Exception:
+            response.update(result="error", reason="handler_failed")
 
     def summary(self) -> dict:
         return {"requests": self.requests, "handler_executions": self.executions, "denials": self.denials}

@@ -1498,6 +1498,11 @@ audio = [
 authority = [
     { name = "cryptography" },
 ]
+pap = [
+    { name = "aiohttp" },
+    { name = "cryptography" },
+    { name = "pyjwt" },
+]
 twilio = [
     { name = "aiohttp" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -1527,6 +1532,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiohttp", marker = "extra == 'pap'", specifier = ">=3.13,<4" },
     { name = "aiohttp", marker = "extra == 'twilio'", specifier = ">=3.13,<4" },
     { name = "aiortc", marker = "extra == 'webrtc'", specifier = ">=1.15,<1.16" },
     { name = "av", marker = "extra == 'webrtc'", specifier = ">=14,<18" },
@@ -1535,13 +1541,15 @@ requires-dist = [
     { name = "openai", marker = "extra == 'agents'", specifier = ">=3.28,<4" },
     { name = "openavt", extras = ["audio"], marker = "extra == 'twilio'" },
     { name = "openavt", extras = ["audio"], marker = "extra == 'webrtc'" },
+    { name = "openavt", extras = ["authority"], marker = "extra == 'pap'" },
     { name = "openavt", extras = ["webrtc"], marker = "extra == 'agents'" },
+    { name = "pyjwt", marker = "extra == 'pap'", specifier = ">=2.10,<3" },
     { name = "python-dotenv", marker = "extra == 'twilio'", specifier = ">=1.2,<2" },
     { name = "python-dotenv", marker = "extra == 'webrtc'", specifier = ">=1.2,<2" },
     { name = "scipy", marker = "extra == 'audio'", specifier = ">=1.14,<2" },
     { name = "twilio", marker = "extra == 'twilio'", specifier = ">=9,<10" },
 ]
-provides-extras = ["authority", "audio", "webrtc", "agents", "twilio"]
+provides-extras = ["authority", "pap", "audio", "webrtc", "agents", "twilio"]
 
 [package.metadata.requires-dev]
 dev = [
