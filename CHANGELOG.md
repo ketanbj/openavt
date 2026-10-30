@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add optional QUIC v1 over PCM/FSK call audio, using native QUIC loss recovery
+  without link ACKs, with bounded datagram fragmentation and mutual TLS checks.
+- Reuse VoiceSession, Gateway, AVA grants, PAP and risk monitoring with
+  `protocol="quic"`; add lossy separate-process demos and installed-wheel checks.
+- Drain final QUIC acknowledgments before call teardown, including slow FSK audio.
+- Generate named-curve demo keys explicitly for modern OpenSSL verification on macOS.
+
 - Recover older releases using their declared extras and available demos; validate
   wheel/source metadata against the selected release's source configuration.
 

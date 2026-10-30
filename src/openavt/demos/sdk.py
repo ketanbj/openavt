@@ -77,8 +77,8 @@ def provision(
     }
 
 
-async def worker_message(worker) -> dict:
-    line = await asyncio.wait_for(worker.stdout.readline(), 180)
+async def worker_message(worker, timeout: float = 180) -> dict:
+    line = await asyncio.wait_for(worker.stdout.readline(), timeout)
     if not line or len(line) > 65536:
         raise RuntimeError("agent worker ended without a valid report")
     message = json.loads(line)
@@ -89,7 +89,21 @@ async def worker_message(worker) -> dict:
     return message
 
 
-async def run(output: Path, *, transport: str = "webrtc", agents: bool = False) -> dict:
+async def run(
+    output: Path,
+    *,
+    transport: str = "webrtc",
+    agents: bool = False,
+    protocol: str = "tls",
+    profile: str = "pcm",
+    loss: bool = False,
+) -> dict:
+    if protocol not in {"tls", "quic"} or profile not in {"pcm", "voiceband"}:
+        raise ValueError("unsupported session protocol or profile")
+    if profile == "voiceband" and transport != "webrtc":
+        raise ValueError("the provider SDK demo supports the PCM profile")
+    if loss and transport == "twilio-live":
+        raise ValueError("audio fault injection is only supported on local calls")
     output.mkdir(parents=True, exist_ok=True)
     if any(output.iterdir()):
         raise ValueError("output directory must be empty")
@@ -107,9 +121,14 @@ async def run(output: Path, *, transport: str = "webrtc", agents: bool = False) 
             caller = provision(directory, enrollment, authority, business)
             common = {
                 "agents": agents,
+                "protocol": protocol,
+                "profile": profile,
+                "loss": loss,
                 "bundle": caller["bundle"],
                 "request_count": len(CASES),
-                "handshake_timeout": 60 if transport == "twilio-live" else 15,
+                "handshake_timeout": 150
+                if profile == "voiceband"
+                else (60 if transport == "twilio-live" else 30 if loss else 15),
             }
             relay_url = None
             if transport in {"twilio-emulated", "twilio-live"}:
@@ -159,7 +178,9 @@ async def run(output: Path, *, transport: str = "webrtc", agents: bool = False) 
                 if ready != [{"ready": "agent"}, {"ready": "desk"}]:
                     raise RuntimeError("provider workers did not attach")
                 await relay.connect()
-            messages = await asyncio.gather(*(worker_message(w) for w in workers))
+            messages = await asyncio.gather(
+                *(worker_message(w, timeout=600 if profile == "voiceband" else 180) for w in workers)
+            )
             caller_report, business_report = (message["report"] for message in messages)
             codes = await asyncio.gather(*(w.wait() for w in workers))
             verified = (
@@ -171,6 +192,9 @@ async def run(output: Path, *, transport: str = "webrtc", agents: bool = False) 
             report = {
                 "verified": verified,
                 "transport": transport,
+                "protocol": protocol,
+                "profile": profile,
+                "audio_fault_injection": loss,
                 "openai_agents": agents,
                 "independent_processes": True,
                 "protected_request_delivery": "audio only",
@@ -205,6 +229,11 @@ def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--transport", choices=("webrtc", "twilio-emulated", "twilio-live"), default="webrtc")
     parser.add_argument("--agents", action="store_true", help="run two independent OpenAI voice agents")
+    parser.add_argument("--protocol", choices=("tls", "quic"), default="tls")
+    parser.add_argument("--profile", choices=("pcm", "voiceband"), default="pcm")
+    parser.add_argument(
+        "--loss", action="store_true", help="inject dropped, damaged and duplicate audio bursts locally"
+    )
     parser.add_argument("--env-file", type=Path, default=Path(".env"))
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
@@ -227,12 +256,22 @@ def main(argv: list[str] | None = None):
     if args.output is None:
         Path("output").mkdir(exist_ok=True)
     output = args.output or Path(tempfile.mkdtemp(prefix="sdk-call-", dir="output"))
-    report = asyncio.run(run(output, transport=args.transport, agents=args.agents))
+    report = asyncio.run(
+        run(
+            output,
+            transport=args.transport,
+            agents=args.agents,
+            protocol=args.protocol,
+            profile=args.profile,
+            loss=args.loss,
+        )
+    )
     print(
         json.dumps(
             {
                 "verified": report["verified"],
                 "transport": report["transport"],
+                "protocol": report["protocol"],
                 "independent_processes": report["independent_processes"],
                 "handshake_seconds": round(report["caller"]["sdk"]["handshake_wall_seconds"], 3),
                 "handler_executions": report["business"]["gateway"]["handler_executions"],

@@ -14,6 +14,10 @@ from openavt.tls import Endpoint
 
 
 class AudioTLS:
+    @property
+    def peer_certificate(self) -> bytes:
+        return self.endpoint.tls.getpeercert(binary_form=True)
+
     def __init__(
         self,
         endpoint: Endpoint,
@@ -67,6 +71,8 @@ class AudioTLS:
             self.stats["ack_frames_rx"] += 1
             if sequence in self.acks:
                 self.acks[sequence].set()
+            return
+        if kind != protocol.DATA:
             return
         self.stats["data_frames_rx"] += 1
         notify = False
@@ -272,6 +278,7 @@ class AudioTLS:
 
     def summary(self) -> dict:
         return {
+            "protocol": "tls",
             **self.stats,
             "tls_bytes_rx": self.tls_bytes_rx,
             "tls_bytes_tx": self.tls_bytes_tx,
@@ -285,6 +292,9 @@ class AudioTLS:
             "handshake_seconds": round(self.ready_at - self.started_at, 3) if self.ready_at else None,
             "error": type(self.error).__name__ if self.error else None,
         }
+
+    async def drain(self) -> None:
+        await asyncio.gather(*list(self.ack_tasks))
 
     async def close(self) -> None:
         for task in list(self.ack_tasks):

@@ -4,6 +4,8 @@ import json
 import subprocess
 import tempfile
 import venv
+import zipfile
+from email.parser import BytesParser
 from pathlib import Path
 
 from openavt import __version__
@@ -14,6 +16,9 @@ def main() -> None:
     if len(wheels) != 1:
         raise SystemExit("Expected exactly one wheel in dist/")
     wheel = wheels[0].resolve()
+    with zipfile.ZipFile(wheel) as archive:
+        metadata_name = next(name for name in archive.namelist() if name.endswith(".dist-info/METADATA"))
+        extras = BytesParser().parsebytes(archive.read(metadata_name)).get_all("Provides-Extra", [])
     with tempfile.TemporaryDirectory(prefix="openavt-wheel-") as temporary:
         work = Path(temporary)
         environment = work / "venv"
@@ -49,6 +54,12 @@ def main() -> None:
         )
         assert missing_authority.returncode == 2
         assert "pip install 'openavt[authority]'" in missing_authority.stderr
+        if "quic" in extras:
+            missing_quic = subprocess.run(
+                [str(cli), "sdk-demo", "--protocol=quic"], cwd=work, capture_output=True, text=True
+            )
+            assert missing_quic.returncode == 2
+            assert "pip install 'openavt[webrtc,authority,quic]'" in missing_quic.stderr
         subprocess.run([str(cli), "loopback", "--scenario", "valid"], cwd=work, check=True)
         report = json.loads((work / "output/valid/trace.json").read_text())
         assert report["tls_version"] == "TLSv1.3"
@@ -65,8 +76,24 @@ def main() -> None:
             cwd=work,
             check=True,
         )
+        # Only sources declaring QUIC should install it: release retries may be
+        # validating immutable wheels built before this optional integration.
+        if "quic" in extras:
+            subprocess.run([str(python), "-m", "pip", "install", f"{wheel}[quic]"], check=True)
+            subprocess.run(
+                [
+                    str(python),
+                    "-I",
+                    "-c",
+                    "import importlib.util; from openavt.quic import AudioQUIC; "
+                    "assert importlib.util.find_spec('aiortc') is None; "
+                    "assert importlib.util.find_spec('openai') is None",
+                ],
+                cwd=work,
+                check=True,
+            )
     print(
-        "Core and PAP-only wheel imports verified. Core wheel installed cleanly and completed mutual TLS outside the checkout."
+        "Optional wheel imports verified. Core wheel installed cleanly and completed mutual TLS outside the checkout."
     )
 
 

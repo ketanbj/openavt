@@ -16,6 +16,7 @@ SAMPLES_PER_BIT = RATE // BAUD
 PREAMBLE = b"\x55" * 12 + b"TOV1"
 HEADER = struct.Struct("!IBH")  # sequence, kind, payload length
 DATA, ACK = 1, 2
+QUIC = 3  # Unreliable datagram fragments; never link-acknowledged.
 MAX_PAYLOAD = 256
 TONES = tuple(
     tuple(int(14000 * math.sin(2 * math.pi * frequency * n / RATE)) for n in range(SAMPLES_PER_BIT))
@@ -42,7 +43,7 @@ def unframe(raw: bytes, *, max_payload: int = MAX_PAYLOAD) -> tuple[int, int, by
         raise FrameError("CRC mismatch")
     sequence, kind, length = HEADER.unpack(body[: HEADER.size])
     payload = body[HEADER.size :]
-    if length != len(payload) or length > max_payload or kind not in (DATA, ACK):
+    if length != len(payload) or length > max_payload or kind not in (DATA, ACK, QUIC):
         raise FrameError("invalid frame header")
     if kind == ACK and payload:
         raise FrameError("ACK contains payload")

@@ -9,6 +9,14 @@ Linux/Python 3.13 and macOS/Python 3.13.
 The older [October 11 main CI run](https://github.com/ketanbj/openavt/actions/runs/38150046644)
 verified the preceding 75-test release; it does not attest to these new changes.
 
+## QUIC milestone (October 30, 2026)
+
+**226 tests passed locally** on macOS/Python 3.13, including QUIC mutual authentication,
+lossy independent WebRTC/provider calls, PAP/risk checks and shutdown behavior.
+The 1 kbps FSK SDK call also passed all eight probes (35.681 s client handshake).
+These are local results, separate from the historical TLS benchmarks below.
+[QUIC guide](quic.md) · [Recorded reports and environment](quic-verification.json).
+
 ## Evidence
 
 | Check | Result | Details |

@@ -4,6 +4,8 @@
 
 OpenAVT places an audio modem beneath OpenSSL's TLS byte stream. The application
 uses TLS-protected JSON requests; the modem delivers the TLS records through audio.
+An optional [QUIC path](quic.md) reuses these modems and adapters, with QUIC's
+own packet recovery replacing the reliable audio framing layer.
 
 ```mermaid
 flowchart LR
@@ -25,6 +27,7 @@ protects the audio leg with SRTP. Recordings are evidence, not the delivery path
 | [`tls.py`](../src/openavt/tls.py) | TLS endpoint using `ssl.MemoryBIO` and the caller's `SSLContext` |
 | [`protocol.py`](../src/openavt/protocol.py) | Frame format, CRC, FSK waveform and WAV helpers |
 | [`channel.py`](../src/openavt/channel.py) | Ordered delivery, audio ACKs, retries and deduplication |
+| [`quic.py`](../src/openavt/quic.py) / [`datagram.py`](../src/openavt/datagram.py) | Optional mutually authenticated QUIC over unreliable audio datagrams |
 | [`modem.py`](../src/openavt/modem.py) / [`pcm.py`](../src/openavt/pcm.py) | Streaming FSK / digital G.711 decoding |
 | [`session.py`](../src/openavt/session.py) / [`gateway.py`](../src/openavt/gateway.py) | Framework-neutral SDK and mandatory business authorization |
 | [`transports/peer.py`](../src/openavt/transports/peer.py) / [`transports/twilio.py`](../src/openavt/transports/twilio.py) | Independent WebRTC endpoint and configurable provider audio |

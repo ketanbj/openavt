@@ -53,7 +53,7 @@ async def run(role: str, config: dict, transport: str, relay: str | None) -> dic
         if transport == "webrtc":
             from openavt.transports.peer import WebRTCAdapter
 
-            adapter = WebRTCAdapter()
+            adapter = WebRTCAdapter(profile=config.get("profile", "pcm"))
             if role == "agent":
                 emit(await adapter.offer())
                 await adapter.accept(await read_signal())
@@ -69,6 +69,11 @@ async def run(role: str, config: dict, transport: str, relay: str | None) -> dic
             adapter = TwilioAdapter(websocket, account_sid=config["twilio_account_sid"])
             emit({"ready": role})
 
+        if config.get("loss"):
+            from openavt.transports.impaired import ImpairedAudio
+
+            adapter = ImpairedAudio(adapter)
+
         def log(event, **_fields):
             if len(events) < 1000:
                 events.append(event)
@@ -79,16 +84,18 @@ async def run(role: str, config: dict, transport: str, relay: str | None) -> dic
             trust=Path(config["bundle"]) / "root.pem",
             expected_peer="desk.demo" if role == "agent" else None,
             server=role == "desk",
+            protocol=config.get("protocol", "tls"),
+            profile=config.get("profile", "pcm"),
             on_speech=inbox.feed,
             log=log,
-            request_timeout=30,
+            request_timeout=150 if config.get("profile") == "voiceband" else 30,
             handshake_timeout=config["handshake_timeout"],
         )
         voice = VoiceAgent(role, client, adapter.send, inbox, log) if config["agents"] else None
         async with session:
             if role == "desk":
                 business = BusinessAuthority(Path(config["business"]), AgentAuthority(Path(config["ava"])))
-                gateway = Gateway(AVAPolicy(business), request_timeout=30)
+                gateway = Gateway(AVAPolicy(business), request_timeout=session.request_timeout)
 
                 async def order_status(request: Request, _claims: dict) -> dict:
                     # A fixed read-only business tool. The gateway controls entry.
@@ -109,8 +116,7 @@ async def run(role: str, config: dict, transport: str, relay: str | None) -> dic
                     await asyncio.sleep(0.25)
                     await voice.greet()
                 await gateway.serve(session, limit=config["request_count"], on_response=speak_result)
-                # Let the client consume the final protected response after its audio ACK.
-                await asyncio.sleep(0.25)
+                # send_json waits for delivery; VoiceSession.close drains media.
                 report = {"gateway": gateway.summary()}
             else:
                 call, requested = None, None

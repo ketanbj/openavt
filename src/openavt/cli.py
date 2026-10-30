@@ -18,6 +18,7 @@ def main(argv: list[str] | None = None) -> None:
         help="WAV proof, live call, authority, delegated access, or independent SDK agents",
     )
     arguments = list(sys.argv[1:] if argv is None else argv)
+    uses_quic = any(a in {"quic", "--protocol=quic"} for a in arguments)
     # Parse only the leading command; each demo owns its options and help.
     options = parser.parse_args(arguments[:1])
     if options.command is None:
@@ -55,6 +56,8 @@ def main(argv: list[str] | None = None) -> None:
                     from openavt.transports.twilio import TwilioAdapter  # noqa: F401
                 else:
                     from openavt.transports.peer import WebRTCAdapter  # noqa: F401
+            if options.command in {"sdk-demo", "pap-demo"} and uses_quic:
+                from openavt.quic import AudioQUIC  # noqa: F401
         except ModuleNotFoundError as error:
             dependencies = {
                 "numpy",
@@ -67,6 +70,7 @@ def main(argv: list[str] | None = None) -> None:
                 "twilio",
                 "aiohttp",
                 "jwt",
+                "aioquic",
             }
             if error.name and error.name.split(".")[0] in dependencies:
                 extra = "webrtc" if "--transport-only" in arguments else "agents"
@@ -74,6 +78,8 @@ def main(argv: list[str] | None = None) -> None:
                     extra = "agents,authority" if "--agents" in arguments else "webrtc,authority"
                 if options.command == "pap-demo":
                     extra = "pap,webrtc"
+                    if uses_quic:
+                        extra += ",quic"
                 if options.command == "sdk-demo":
                     transport_extra = (
                         "twilio" if any(a.startswith("twilio-") for a in arguments) else "webrtc"
@@ -81,6 +87,8 @@ def main(argv: list[str] | None = None) -> None:
                     extra = "agents,authority" if "--agents" in arguments else transport_extra + ",authority"
                     if transport_extra == "twilio" and "--agents" in arguments:
                         extra += ",twilio"
+                    if uses_quic:
+                        extra += ",quic"
                 parser.error(f"Install the optional dependencies: pip install 'openavt[{extra}]'")
             raise
     run(arguments[1:])
