@@ -6,12 +6,6 @@ This is a research draft, with an implemented prototype and a prospective
 evaluation plan. It is not a submitted or accepted paper. The prototype results
 are local feasibility observations, not a completed real-world security study.
 
-**Novelty assessment:** the subsequent [October 30 research audit](research/novelty-audit-2026-10-30.md)
-identifies additional close work on secure telephony, automated certificate issuance
-and agent authorization. It does not yet establish a strong novelty claim for the
-current implementation. Consult the audit before treating the draft's positioning
-as submission-ready.
-
 The draft covers personal agents and multimodal/physical AI motivation; the
 Pindrop field report; when existing APIs, protocols, media security and detection
 are sufficient or complementary; technical challenges; OpenAVT design and trust
