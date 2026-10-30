@@ -1,0 +1,183 @@
+\section{OpenAVT Design}
+\label{sec:design}
+\subsection{Architecture and separation of authority}
+\sys{} separates a protected control exchange from ordinary conversational
+speech (Figure~\ref{fig:architecture}). The public \code{VoiceSession} API owns
+the audio adapter, authentication lifecycle, and serialized request exchange.
+A receiving \code{Gateway} owns an allowlist of handlers, request validators,
+and an authorization policy. The same gateway operates over both transport
+profiles. The model has no entry point that directly invokes a registered
+business handler while bypassing this gateway.
+
+The prototype's Agent Voice Authority (AVA) performs account registration,
+CSR enrollment, key-possession proof, certificate issuance, renewal, and
+revocation. A distinct business signer issues customer grants. Separating these
+keys prevents possession of an enrollment CA key from being treated as the
+intended application permission. A production service would additionally need
+credible account authentication, key recovery, issuer governance, and appropriate
+identity assurance. The local authority is not a production CA.
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[font=\small,>=Latex,
+ box/.style={draw,rounded corners,align=center,minimum height=10mm,text width=29mm},
+ flow/.style={->,thick}]
+\node[box] (model) at (0,0) {Agent model\\proposes intent};
+\node[box] (sdk) at (3.6,0) {Session + key store\\checks channel};
+\node[box] (modema) at (7.2,0) {TLS + ARQ or QUIC\\audio modem};
+\node[box] (modemb) at (10.8,0) {Audio modem\\protected channel};
+\node[box] (gateway) at (14.4,0) {Gateway + policy\\business handler};
+\draw[flow] (model) -- (sdk);
+\draw[flow] (sdk) -- (modema);
+\draw[flow,<->] (modema) -- node[above=7mm,align=center]{call audio} (modemb);
+\draw[flow] (modemb) -- (gateway);
+\node[box] (grant) at (5.4,2.0) {Business grant signer\\user permission};
+\draw[flow] (grant) -- node[left]{grant} (sdk);
+\draw[flow,dashed] (grant.east) -| node[pos=0.3,above]{verification / current state} (gateway.north);
+\node[draw,dashed,align=center,text width=28mm] (speech) at (10.8,-1.6) {Ordinary speech\\remains untrusted};
+\draw[dashed,->] (speech) -- (modemb);
+\end{tikzpicture}
+\caption{Protected structured control travels through the call's actual audio. Enrollment and grant acquisition use separate services. The gateway checks permission outside the model; the inner channel does not authenticate the semantic content of ordinary speech. Dashed edges denote separate trust or service interactions.}
+\label{fig:architecture}
+\end{figure*}
+
+\subsection{Audio modulation and framing}
+The \code{voiceband} profile uses binary FSK at 1 kbps, with 1 and 2 kHz tones
+in 8 kHz mono samples. Its streaming decoder acquires a preamble at unknown
+sample offsets, reads a length-bounded frame, and verifies a CRC. It assumes
+stable timing within each frame and has no clock-drift recovery.
+
+The \code{pcm} profile maps seven bits to one of 128 selected G.711 mu-law
+reconstruction levels per sample, giving a raw signaling rate of
+$8000\times7=56{,}000$ bit/s on a sample-preserving digital path. Preamble,
+header, CRC, padding, and transport cryptography reduce application throughput.
+This is not a claim of 56 kbps through an arbitrary voice codec, acoustic link,
+or PSTN route. Transcoding and voice enhancement can alter those exact levels.
+
+Both profiles use the repository's sequence, frame-kind, and length header.
+CRC detects accidental damage but supplies no cryptographic authenticity.
+The cryptographic layer must reject modified bytes even when an attacker
+recomputes a valid CRC. Call adapters deliver 8 kHz mono integer samples;
+WebRTC uses audio RTP rather than a data channel, and the provider adapter
+wraps G.711 audio in the provider's media envelope.
+
+\subsection{TLS over reliable audio}
+The original channel uses OpenSSL \code{MemoryBIO} endpoints configured for
+mutual TLS 1.3~\cite{rfc8446}. It fragments outgoing TLS bytes into bounded
+frames, transmits a frame, waits for its audio acknowledgment, and retries on
+timeout. Sequence numbers suppress duplicate delivery. Lost frames or ACKs
+therefore do not require a lossless physical medium.
+
+This profile is a useful baseline: it is small, uses a mature TLS implementation,
+and offers transparent ordered bytes. Its stop-and-wait operation can leave
+capacity idle while a low-rate acknowledgment is played. Our evaluation must
+measure that cost against QUIC's larger handshake, packet overhead, and recovery
+behavior instead of assuming an architectural win.
+
+\subsection{QUIC over unreliable audio datagrams}
+The QUIC channel uses aioquic 1.3.0's sans-I/O packet engine~\cite{aioquic}.
+It supplies received packets and a monotonic clock, drives the engine's timers,
+and modulates generated packets. The routing address passed to the engine is
+an opaque local token; the channel creates no UDP socket. This uses QUIC's
+packet format, TLS handshake, reliable stream machinery, and recovery
+algorithms~\cite{rfc9000,rfc9001,rfc9002} over an experimental non-UDP underlay.
+It is not standard Internet QUIC interoperability with an unmodified endpoint.
+
+Packets are limited to 1200 bytes. Audio frame kind 3 carries a fragment index,
+fragment count, total packet length, and packet bytes. The four-byte fragment
+header leaves 252 bytes per FSK frame, requiring up to five fragments; the PCM
+profile fits a packet into one frame. Each packet has its own audio sequence.
+The receiver accepts out-of-order fragments and duplicates, bounds reassembly
+to 16 partial packets, and expires incomplete entries after 5 seconds for PCM
+or 60 seconds for FSK. It discards missing or invalid fragments rather than
+requesting audio retransmission. A later packet does not wait for an earlier
+sequence gap. These are link datagrams carrying QUIC packets, not use of QUIC's
+optional unreliable application DATAGRAM extension.
+
+The engine and audio sender use separate asynchronous tasks. The engine can
+process inbound packets while a bounded output burst is playing; it builds
+further output and services timers between bursts. Initial RTT is 0.5 seconds
+for PCM and 25 seconds for FSK to accommodate audio serialization. These values
+are prototype defaults, not optimized parameters. Native congestion control
+limits generated bursts; a 128-entry output queue supplies an additional bound.
+The application serializes requests on bidirectional stream 0. We do not yet
+exploit multiplexing and make no claim about avoiding application head-of-line
+blocking across concurrent operations.
+
+\subsection{Mutual authentication and session lifecycle}
+Both profiles require an explicitly selected root and a client-specified
+service hostname. QUIC uses version 1, ALPN \code{openavt/1}, and TLS 1.3 with
+no configured resumption tickets or 0-RTT. The QUIC integration additionally
+checks both leaf certificates' chain, validity, expected purpose,
+digital-signature usage, and non-CA status. TLS CertificateVerify supplies
+the proof of key possession.
+
+Requiring a client certificate needs care: aioquic's default server setup does
+not expose a public required-client-certificate option. A narrow subclass
+enables its certificate-request hook and retrieves the peer certificate for
+explicit validation before the application is marked verified. The client
+also waits for a fixed encrypted server confirmation on unidirectional stream
+3, sent only after the server's client validation. This prevents the client
+from releasing its grants merely because it has authenticated the server.
+The subclass also reads stream acknowledgment offsets and pending ACK state
+to bound delivery waits. These private interfaces are a maintenance and audit
+liability; the dependency is pinned and upgrades need the negative handshake
+and teardown tests. This is not a new key-exchange protocol or a formal proof
+of the library integration.
+
+A session moves from new to authenticating to verified, or fails and closes.
+Certificate or transport failure blocks protected operations and invalidates
+the risk monitor's authenticated context. Application JSON messages are limited
+to 64 KiB, and message queues to 32 entries. Protected logs omit application
+contents and secrets; QUIC telemetry retains loss counters rather than
+unbounded packet traces or traffic keys.
+
+The shared audio scheduler reserves modem bursts and prevents speech mixing.
+Speech resumes between protected exchanges, and the receiver routes samples
+outside detected modem activity to the optional speech adapter. This heuristic
+is useful scheduling, not a proof of semantic isolation: incomplete or
+unrecognized modem activity can still require careful handling by an ASR stack.
+
+\subsection{Delegation and execution}
+The client requests a live challenge before submitting an operation. The
+gateway binds the response to a request identifier and nonce, validates an
+allowlisted action and its schema, and invokes its authorization policy.
+The standalone AVA grant signs issuer, customer, audience, agent identity,
+scope, resource, validity interval, unique grant ID, and certificate fingerprint.
+Its fixed read-only policy rejects additional arguments. The challenge and
+grant are checked and consumed in persistent transaction state. A new action
+does not inherit permission from a successful earlier read.
+
+The optional PAP bridge obtains a grant over HTTPS using a current session and
+DPoP-style key possession. It also proves possession of the voice key and binds
+the grant to the live voice challenge, request ID, action, resource, customer,
+and canonical argument hash. Its lifetime is at most 30 seconds and no longer
+than the session or certificate. The gateway verifies the current permission
+and consumes replay state. This policy supports a second permission check
+after risk assessment, immediately before the handler. The standalone AVA
+policy does not currently implement that second hook; production policies
+must define their revocation and commit-time race semantics explicitly.
+
+The risk adapter receives bounded audio observation and structured request
+signals. A block or unavailable policy can reduce execution; an ``allow''
+assessment cannot bypass the grant. Policies, schemas, and business state
+remain outside the language model. Keys and account tokens are kept out of
+model context, although applications must separately control any confidential
+business response later supplied to a model or spoken aloud.
+
+Finally, transport deduplication is not application exactly-once execution.
+If a submitted request loses its confirmed response, the SDK raises
+\code{RequestOutcomeUnknown} and closes the call. The PAP demonstration proposes
+a write over audio but confirms a stable operation ID through HTTPS; repeated
+confirmation and status recovery produce one simulated effect. Other writes
+need equivalent transaction or idempotency semantics.
+
+\subsection{Teardown as part of delivery}
+A receiver can obtain the final response before its delayed QUIC ACK has been
+generated or finished audio playback. Closing at that point can leave the
+sender uncertain about delivery. The integration waits for outgoing stream
+bytes to be acknowledged, for pending ACK generation, and for queued audio
+to finish. A regression test holds the final ACK waveform and checks that
+drain waits. This bug was exposed when validating the slower FSK path; it
+illustrates how ordinary network-lifecycle assumptions can fail under audio
+serialization.

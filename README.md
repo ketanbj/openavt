@@ -144,3 +144,4 @@ simulated exchange with explicit HTTPS confirmation.
 | Reproduce the timings | [Performance](docs/performance.md) |
 | Inspect tests and evidence | [Verification](docs/verification.md) |
 | Build and publish the package | [Releasing](docs/releasing.md) |
+| Read the research draft and evaluation plan | [LaTeX paper](paper/README.md) · [PDF](paper/openavt.pdf) |

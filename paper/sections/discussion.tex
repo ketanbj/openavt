@@ -1,0 +1,69 @@
+\section{Discussion}
+\label{sec:discussion}
+\paragraph{When does modality-local security earn its cost?}
+The most favorable setting is a legacy-compatible interaction path that
+already carries audio to the intended application but lacks a shared secure
+agent API or trustworthy media intermediary. Audio-carried control lets the
+end applications establish a protected exchange through that available path.
+Its cost is additional endpoint deployment, airtime, scheduling, and codec
+sensitivity. A business that controls both endpoints of a suitable authenticated
+API may obtain the same authorization properties more simply without a modem.
+The evaluation must identify this boundary rather than assume universality.
+
+\paragraph{Multimodal and physical AI are a motivation, not evaluated scope.}
+A robot observing a sign, an agent hearing a remote speaker, and a model
+reading rendered text all face questions about whether perceptual content
+may authorize effects. A signed optical symbol, an authenticated acoustic
+control exchange, or another modality-specific mechanism might help connect
+an observed interface to an issuer. But copying and live relaying still
+separate key possession from physical origin. Extending \sys{} to cameras,
+robots, or safety-critical actuators would require additional protocols,
+presence assumptions, and experiments. No such implementation is claimed.
+
+\paragraph{Authentication does not imply benevolence.}
+A valid agent may request an allowed operation for a harmful purpose, and a
+customer may authorize a fraudulent task. Enrollment policies, business
+controls, anomaly detection, user confirmation, and liability remain necessary.
+The fraud adapter is intentionally able to restrict an authenticated call.
+Its interface is implemented, but no evaluated commercial detector or fraud
+model is included in these results.
+
+\paragraph{A channel does not certify a conversation.}
+The current design protects structured control messages and their endpoint
+identity. It does not sign utterances, authenticate transcripts, or bind every
+spoken claim to the protected request. Speech summarization must not turn a
+model's paraphrase into a new authorization. A business should display the
+validated action and result through an appropriate trusted interface and
+make human takeover or changed endpoints trigger a new authorization decision.
+Secure transfer and multi-party call semantics remain open work.
+
+\paragraph{Identity governance and privacy.}
+An authority's certificate quality depends on its registration procedures.
+Production adoption needs revocation distribution, short-lived credentials,
+issuer selection, recovery, and compromise response. Stable certificates can
+also enable correlation across businesses; pairwise identities and minimal
+disclosure deserve study. Our prototype is not an identity federation or a
+privacy-preserving credential system. Keys and tokens must remain protected
+in the agent runtime, and logs and recordings require a deliberate retention
+policy even when application payloads are encrypted.
+
+\paragraph{Submission readiness.}
+The checked-in prototype demonstrates a working mechanism with explicit
+limitations. A full systems-security submission needs the adversarial,
+compositional, and real-path evaluation in Section~\ref{sec:evaluation}, plus
+independent review of the authentication integration. A networking submission
+also needs a strong quantitative account of modem adaptation, scheduling,
+congestion/recovery behavior, and deployment tradeoffs. We do not infer
+publication-level evidence from a test count or a sub-second local handshake.
+
+\section{Conclusion}
+\label{sec:conclusion}
+Personal-agent voice interactions expose a gap between plausible conversation
+and explicit customer authority. \sys{} demonstrates that existing audio
+adapters can carry a mutually authenticated cryptographic control exchange and
+that a separate gateway can enforce scoped grants before business execution.
+Its QUIC profile recovers deterministic local audio faults without reliable
+link framing. The remaining research question is where this binding provides
+measurable security and deployment value under realistic paths and adversaries.
+The evaluation plan specifies how to test that question without treating
+cryptographic endpoint identity as proof of truthful speech or physical origin.

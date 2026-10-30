@@ -1,0 +1,71 @@
+\section{Introduction}
+An agent that reads an order through a web API can present an access token to the
+resource server. An agent that calls a business instead presents sound to an IVR
+or a person. The latter interface exposes information and accepts requests before
+the receiving organization necessarily knows which software key is calling,
+which customer it represents, or what that customer authorized. A plausible
+voice and a plausible request do not answer those questions.
+
+This problem is visible in deployed contact centers. In an October 9, 2026 field
+report, Pindrop describes detecting Meta Muse calls by matching two synthetic
+voices, Brett and Hailey. It reports eightfold weekly growth between the first
+and fourth observed weeks, in a September 9--October 6 customer sample, and notes
+that different customers classify such calls differently. The report explicitly
+distinguishes recognizing an agent from establishing its customer's identity and
+permission~\cite{pindrop2026}. This is vendor-reported observational evidence of
+an emerging operational problem, not a representative population measurement or
+an independent validation of detection accuracy. We use it to motivate the
+authorization question, not to estimate fraud prevalence or justify a claim
+about all personal agents.
+
+The broader issue concerns where authority enters a multimodal system. A model
+may receive text, audio, images, and sensor observations, while holding access to
+tools with real effects. Research on language-conditioned robotics illustrates
+how linguistic and visual inputs can influence physical actions~\cite{saycan,rt2}.
+Earlier microphone injection attacks show why perceptual plausibility does not
+constitute authorization~\cite{dolphin,lightcommands}; recent auditory prompt
+injection work extends this concern to audio-language models~\cite{audiohijack}.
+A transport securing one service connection does not automatically protect a
+separate microphone, rendered page, or telephone leg.
+
+We investigate a concrete design principle: \emph{when an interaction is mediated
+by a modality, the receiving executor should obtain explicit authority bound to
+the endpoint participating through that modality}. In voice, this can mean
+carrying a cryptographic control exchange through call audio. This principle
+does not require encrypting every sound, proving who physically produced it,
+or replacing an available authenticated API. It requires preventing an
+unauthenticated observation from silently becoming sufficient authority for an
+account action.
+
+\sys{} instantiates this principle for participating voice agents and business
+gateways. It transmits protected structured requests through an audio modem,
+authenticates endpoint certificates with TLS 1.3, and separately checks signed
+customer permissions. The language model may propose an operation but does not
+issue its own permissions or receive private keys and grant credentials. A
+business handler runs only after a deterministic gateway checks the request.
+Ordinary speech remains outside this protected control exchange.
+
+Two transport profiles expose the central networking tradeoff. The original
+profile carries an OpenSSL TLS byte stream over ordered audio frames with
+acknowledgments and retries. TLS therefore does \emph{not} require the physical
+audio path itself to be lossless. The new profile carries QUIC packets through
+unreliable audio frames, using QUIC's own TLS handshake and stream recovery.
+Removing the lower reliable layer avoids composing two recovery mechanisms,
+but does not establish that QUIC is faster or more robust on every audio path.
+Both profiles depend on successful modem decoding.
+
+The prototype also bridges an HTTPS personal-agent session to a short-lived,
+request-specific voice grant and supports fraud assessment before execution.
+An authenticated caller may still be malicious; detection and permission checks
+serve different purposes and can be used together.
+
+This draft makes three contributions. First, it specifies the voice-to-executor
+trust boundary and distinguishes endpoint identity, delegated permission, and
+untrusted perceptual content. Second, it presents a working design that reuses
+standard cryptographic transports over audio and composes them with external
+authorization. Third, it provides reproducible local feasibility evidence and
+a falsifiable evaluation plan. The evidence is deliberately narrow: separate
+processes on one machine, controlled digital audio, simulated business effects,
+and synthetic fault injection. We do not claim a new cryptographic primitive,
+the first secure voice modem, a solution to general prompt injection, or a
+completed deployment study.

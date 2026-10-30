@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-30",
+  "implementation_commit": "033f8bfbc69c4bfa44163f8fa4a680a004400f75",
+  "compiler": "Tectonic 0.17.0 (XeTeX, BibTeX)",
+  "template": "USENIX Security 2027 official usenix.sty, unmodified",
+  "pages_total": 12,
+  "body_last_page": 10,
+  "abstract_words": 179,
+  "bibliography_entries": 23,
+  "unresolved_citations": 0,
+  "overfull_boxes": 0,
+  "out_of_page_text_or_links": 0,
+  "all_fonts_embedded": true,
+  "visual_review": "All 12 pages rendered with MuPDF and inspected; final diagram reviewed separately at higher resolution",
+  "pdf_sha256": "7f054451f449f80a9e90a02fd85a1aa532c0d57ae156b672913ba51cbaf526ca",
+  "evidence_sha256": "eca2a64475ceed71033a782fbc892aa60369227c7e1f29368b591f803f976b7d",
+  "content_status": "Working draft with local feasibility observations and a prospective evaluation plan; not submitted",
+  "source_files": {
+    "artifacts/measurements.tex": "868b8ec77eb6c7dac3b6980f5639dfbc940f65406642d32d11a53c7cbea7eeec",
+    "main.tex": "a1088ffda1f63e3620e62e7893e4e30a4fb8dcfbd36f02f873b0cc629937d8c3",
+    "references.bib": "4e057d49a582cdb18d182f1e993359cd23d131da903673969ab7e07991e07d32",
+    "sections/alternatives.tex": "d4d61dd0e77e159e7fb6a0c9b2b761fece504e8892a55a86d011325c8ee777fb",
+    "sections/appendix.tex": "eb945272efdd391d2726e2a97d0ca86f02708f0276535bc9f2842d69c6985064",
+    "sections/design.tex": "6384021e21463b74ad4dfb849ee7a4219145b8085880e913f058794f2ad4fe9f",
+    "sections/discussion.tex": "f24f9abfc454d5dad545947a5752d2e3011d3dfe94a5a6f8c7a7ff17fb1b88ae",
+    "sections/evaluation.tex": "66f503bc67d1e2c9a6326ddd52f07c1bab9c77f3b0afd62e7ef6b306ecbcbf46",
+    "sections/introduction.tex": "38ebc40949340f9c86c1d9f85ec9fe17bb40dd95e1a9ed32c07c1ad76bebfe64",
+    "sections/model.tex": "5bd5dabca9a518e7047f458baae38a20961d3fe33a3b4d73d1b5bfc9665c11f9",
+    "sections/related.tex": "8b9811da801393f1df0e4b51532cddbe4b9b9565733c4a330fedc4e03c71fc5a",
+    "sections/security.tex": "3c432d2be64cac7fa1d926026942eeebff2d23a51755e6d5b2f02ad012d9ffe8",
+    "usenix.sty": "2278c83173e084a00fcf76d3227acb971f5137ecea993a5b4e13a9b2bd67b45e"
+  }
+}

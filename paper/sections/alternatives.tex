@@ -1,0 +1,97 @@
+\section{Why Existing Approaches Are Not Interchangeable}
+\label{sec:alternatives}
+The relevant question is not whether another approach is secure in isolation,
+but whether its authenticated principal and authorization decision reach the
+executor for this interaction. Table~\ref{tab:alternatives} summarizes deployment
+conditions rather than ranking unrelated products.
+
+\begin{table*}[t]
+\centering
+\begin{tabularx}{\textwidth}{p{1.30in}XX}
+\toprule
+Approach & Where it can be sufficient & What remains at an ordinary voice boundary \\
+\midrule
+Authenticated business API & The agent and business expose compatible endpoints, with scoped authorization and suitable confirmation. & Often the preferred path. A separate call still needs correlation if its content or parties matter to execution. \\
+OAuth, PAP, A2A, or MCP & Discovery, agent identity, account access, and tool interactions through supported authenticated transports. & A valid web session is not automatically a proof about an unrelated caller. A transport binding can connect them. \\
+WebRTC / SRTP & Media confidentiality and integrity between the actual cryptographic media endpoints. & Media keys alone do not specify customer delegation; a gateway terminating media may be a different trust boundary. \\
+STIR / SIP identity & Asserted telephone identity under the signaling trust model. & A telephone number is not a scoped, single-use customer authorization for an application operation. \\
+Synthetic-voice detection or biometrics & Risk signals, triage, and identification within a deployed detection model. & Recognizing a voice does not demonstrate possession of an agent key or identify the exact customer grant. \\
+Spoken codes or user callbacks & Explicit user participation with a correctly designed transaction-binding flow. & Codes can be relayed or disclosed; exact intent and concurrent-call binding need a protocol and user interface. \\
+TLS over audio / QUIC over audio & Protected machine requests through a mutually supported audio path. & Requires both endpoints, a decodable modem, trusted authorization, and a separately justified enrollment policy. \\
+\bottomrule
+\end{tabularx}
+\caption{Complementary approaches and the assumptions under which they address the voice-to-executor boundary. An available authenticated API can remove the need for an audio control channel.}
+\label{tab:alternatives}
+\end{table*}
+
+\paragraph{Web authorization is a foundation.}
+OAuth certificate-bound tokens and DPoP already bind credentials to possession
+of a key~\cite{rfc8705,rfc9449}. PAP describes personal-agent discovery, sessions,
+account access, and conversations; its current public draft is 0.3~\cite{pap03}.
+MCP defines HTTP authorization, and A2A provides agent interaction and security
+mechanisms~\cite{mcp,a2a}. We do not claim these protocols lack security. The
+additional question is how a particular audio endpoint demonstrates possession
+of the relevant key and presents permission to its executor. Our prototype
+implements a custom bridge for the repository's earlier PAP draft 0.1 profile;
+it is not evidence of current-draft conformance or external interoperability.
+
+An HTTPS grant sent to a receiving application can be entirely adequate when
+the receiving application securely correlates that grant with the call. Such
+an approach is an important baseline, not a design to exclude. A spoken call ID
+alone is a weak correlation primitive if an attacker can relay it; adding
+authenticated channel evidence changes the comparison. We plan to compare
+these concrete designs, including their operational costs.
+
+\paragraph{Media encryption and signaling identity answer different questions.}
+WebRTC security protects media between its selected endpoints~\cite{rfc8826}.
+It does not itself express the customer's permitted account operation. SIP
+authenticated identity addresses assertions about originating identity in
+signaling~\cite{rfc8224}; it does not replace an application grant. Inner
+cryptography is useful if media must traverse an untrusted terminator while
+the business executor and agent retain their keys. If media and authorization
+already terminate at the intended trusted applications, an additional audio
+tunnel may be redundant.
+
+\paragraph{Detection remains useful.}
+Detection can operate on callers that do not participate in a new protocol and
+can identify suspicious behavior even after authentication. Conversely, a
+known voice can be shared by many users, and a valid certificate can belong to
+a malicious agent. Treating detection as a risk input and explicit grants as
+execution constraints preserves the value of both. \sys{} does not establish
+a measured improvement over a commercial detector.
+
+\section{What Makes the Problem Non-Trivial}
+\label{sec:challenges}
+\paragraph{The modality is not a packet socket.}
+An audio path introduces serialization delay, codec transformations, framing
+loss, timing drift, echo control, and speech interference. A link that preserves
+human intelligibility need not preserve modem symbols. A certificate chain
+small on an IP network can occupy seconds of a low-rate call, interacting with
+loss timers and grant expiry.
+
+\paragraph{Loss recovery must be placed deliberately.}
+TLS records need reliable ordered bytes; the existing profile supplies them.
+QUIC supplies recovery for its own handshake and reliable streams, allowing
+the audio link to discard damaged datagrams. However, QUIC requires support for
+1200-byte Initial datagrams~\cite{rfc9000}. A 256-byte audio payload therefore
+requires fragmentation, without converting incomplete datagrams into a global
+ordered backlog. Under an illustrative independent fragment-erasure probability
+$p$, a five-fragment packet survives with probability $(1-p)^5$. At $p=0.01$
+this predicts about $4.9\%$ packet erasure. This is an analytical illustration,
+not a channel measurement; burst loss will violate the independence assumption.
+
+\paragraph{Authority needs more than a secure handshake.}
+A certificate identifies a key under an issuer's policy. A customer grant
+restricts what that key can do. A live challenge establishes freshness. An
+argument digest can bind one exact proposal. None implies that the surrounding
+speech is truthful or that a model's interpretation matches the user's intent.
+The executor must keep these assertions separate and validate them at the
+right point in its transaction.
+
+\paragraph{Conversation and reliable execution have different semantics.}
+Two modem waveforms must not interleave, and speech should not overwrite a
+protected exchange. Even a perfectly recovered request can execute once while
+its response is lost. A retry policy cannot infer whether the application
+committed a write. Finally, finishing an application receive does not mean its
+delayed transport acknowledgment has finished playing. Teardown must preserve
+that final audio, especially on the slower modem.
