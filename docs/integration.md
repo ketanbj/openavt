@@ -6,6 +6,10 @@ Use **`VoiceSession` on the personal agent and `Gateway` on the business**.
 The LLM proposes an action; the SDK transports it through audio TLS, and the
 business policy decides whether its handler may run. No agent framework is required.
 
+For lossy audio, install the `quic` extra and pass `protocol="quic"` to both
+sessions. The same Gateway, identities and policies apply. See the
+[QUIC guide](quic.md) for end-to-end demos and modem requirements.
+
 ## Run the complete application
 
 From a checkout, with no credentials:

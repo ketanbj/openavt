@@ -72,7 +72,7 @@ class StreamDecoder:
                 raw_header = decode(self.buffer[PREFIX_SAMPLES:header_samples])
                 _, kind, length = protocol.HEADER.unpack(raw_header)
                 if (
-                    kind not in (protocol.DATA, protocol.ACK)
+                    kind not in (protocol.DATA, protocol.ACK, protocol.QUIC)
                     or length > protocol.MAX_PAYLOAD
                     or (kind == protocol.ACK and length)
                 ):

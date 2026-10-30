@@ -127,7 +127,7 @@ async def local_company(directory, *, namespace=NAMESPACE):
         sock.close()
 
 
-async def run(output: Path, *, namespace=NAMESPACE):
+async def run(output: Path, *, namespace=NAMESPACE, protocol="tls", loss=False):
     from openavt import Gateway, VoiceSession
     from openavt.transports.peer import WebRTCAdapter
 
@@ -141,6 +141,11 @@ async def run(output: Path, *, namespace=NAMESPACE):
             # Explicit simulated user sign-in/consent, never model-controlled approval.
             await client.finish_direct(company.approve_direct(flow.url))
             a, b = WebRTCAdapter(), WebRTCAdapter()
+            caller_audio, desk_audio = a, b
+            if loss:
+                from openavt.transports.impaired import ImpairedAudio
+
+                caller_audio, desk_audio = ImpairedAudio(a), ImpairedAudio(b)
             risk = {"block": False, "observed": 0}
 
             async def observe(context, pcm):
@@ -151,13 +156,17 @@ async def run(output: Path, *, namespace=NAMESPACE):
 
             monitor = RiskMonitor(CallbackFraudAdapter(observe=observe, assess=assess))
             caller = VoiceSession(
-                audio=a,
+                audio=caller_audio,
+                protocol=protocol,
+                handshake_timeout=30 if loss else 15,
                 identity=identity,
                 trust=identity.certificate.parent / "root.pem",
                 expected_peer="desk.demo",
             )
             desk = VoiceSession(
-                audio=b,
+                audio=desk_audio,
+                protocol=protocol,
+                handshake_timeout=30 if loss else 15,
                 identity=Identity.load(identity.certificate.parent, name="desk"),
                 trust=identity.certificate.parent / "root.pem",
                 server=True,
@@ -253,6 +262,9 @@ async def run(output: Path, *, namespace=NAMESPACE):
                 "simulated_user_approval": True,
                 "https_certificate_verified": True,
                 "transport": "WebRTC audio, PCM/G.711",
+                "protocol": protocol,
+                "audio_fault_injection": loss,
+                "audio_session": audio_summary,
                 "tls_handshake_seconds": audio_summary["handshake_seconds"],
                 "webrtc_data_channel": False,
                 "protected_request_delivery": "audio only; session and account tokens stay on HTTPS",
@@ -278,8 +290,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("output/pap-demo"))
     parser.add_argument("--namespace", default=NAMESPACE)
+    parser.add_argument("--protocol", choices=("tls", "quic"), default="tls")
+    parser.add_argument("--loss", action="store_true", help="inject local audio faults")
     args = parser.parse_args(argv)
-    report = asyncio.run(run(args.output, namespace=args.namespace))
+    report = asyncio.run(run(args.output, namespace=args.namespace, protocol=args.protocol, loss=args.loss))
     print(json.dumps(report, indent=2))
 
 

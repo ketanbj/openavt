@@ -74,6 +74,7 @@ class VoiceSession:
         expected_peer: str | None = None,
         server: bool = False,
         profile: str = "pcm",
+        protocol: str = "tls",
         handshake_timeout: float = 15,
         request_timeout: float = 15,
         on_speech: Callable | None = None,
@@ -84,6 +85,8 @@ class VoiceSession:
             raise ValueError("a client must specify the expected service hostname")
         if profile not in {"pcm", "voiceband"} or audio.profile != profile:
             raise ValueError("session and audio adapter must use the same supported profile")
+        if protocol not in {"tls", "quic"}:
+            raise ValueError("session protocol must be tls or quic")
         if not 0 < handshake_timeout <= 150 or not 0 < request_timeout <= 150:
             raise ValueError("timeouts must be between zero and 150 seconds")
         self.audio, self.server, self.profile = audio, server, profile
@@ -97,13 +100,26 @@ class VoiceSession:
         self._lock = asyncio.Lock()
         self._suppress_until = 0.0
         self._handshake_seconds: float | None = None
-        endpoint = Endpoint(
-            "desk" if server else "agent",
-            identity.context(trust, server=server),
-            server=server,
-            server_hostname=expected_peer,
-        )
-        self.channel = AudioTLS(endpoint, audio.send, self._safe_log, profile=profile)
+        if protocol == "quic":
+            from openavt.quic import AudioQUIC
+
+            self.channel = AudioQUIC(
+                identity,
+                trust,
+                audio.send,
+                self._safe_log,
+                server=server,
+                server_hostname=expected_peer,
+                profile=profile,
+            )
+        else:
+            endpoint = Endpoint(
+                "desk" if server else "agent",
+                identity.context(trust, server=server),
+                server=server,
+                server_hostname=expected_peer,
+            )
+            self.channel = AudioTLS(endpoint, audio.send, self._safe_log, profile=profile)
         if profile == "pcm":
             from openavt.pcm import StreamDecoder
         else:
@@ -171,7 +187,7 @@ class VoiceSession:
     def peer_certificate(self) -> bytes:
         if self.state != "verified" or self.channel.error:
             raise ConnectionError("the session is not verified")
-        return self.channel.endpoint.tls.getpeercert(binary_form=True)
+        return self.channel.peer_certificate
 
     async def send_speech(self, samples) -> None:
         if self.state != "verified" or self.channel.error:
@@ -269,7 +285,7 @@ class VoiceSession:
         if self.state == "verified" and not self.channel.error:
             # Let outstanding audio ACKs drain before tearing down RTP/playback.
             try:
-                await asyncio.wait_for(asyncio.gather(*list(self.channel.ack_tasks)), 1)
+                await asyncio.wait_for(self.channel.drain(), 10 if self.profile == "voiceband" else 1)
                 await asyncio.sleep(0.15)
             except (Exception, asyncio.CancelledError):
                 pass

@@ -120,7 +120,11 @@ class StreamDecoder:
                 try:
                     header = _decode(self.buffer[len(PREFIX) : header_end])
                     _, kind, length = protocol.HEADER.unpack(header[len(protocol.PREAMBLE) : HEADER_BYTES])
-                    if not header.startswith(protocol.PREAMBLE) or kind not in (protocol.DATA, protocol.ACK):
+                    if not header.startswith(protocol.PREAMBLE) or kind not in (
+                        protocol.DATA,
+                        protocol.ACK,
+                        protocol.QUIC,
+                    ):
                         raise protocol.FrameError("invalid PCM header")
                     if length > MAX_PAYLOAD or (kind == protocol.ACK and length):
                         raise protocol.FrameError("invalid PCM payload length")

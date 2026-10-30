@@ -92,6 +92,11 @@ jobs:
           if [ -f "$OPENAVT_ROOT/src/openavt/demos/pap.py" ]; then
             "$OPENAVT_ROOT/.venv/bin/openavt" pap-demo --output pap-call
           fi
+          if [ -f "$OPENAVT_ROOT/src/openavt/quic.py" ]; then
+            "$OPENAVT_ROOT/.venv/bin/openavt" sdk-demo --protocol quic --loss --output quic-webrtc
+            "$OPENAVT_ROOT/.venv/bin/openavt" sdk-demo --protocol quic --loss --transport twilio-emulated --output quic-twilio
+            "$OPENAVT_ROOT/.venv/bin/openavt" pap-demo --protocol quic --loss --output quic-pap
+          fi
       - name: Record release evidence
         env:
           VERSION: ${{ steps.plan.outputs.version }}

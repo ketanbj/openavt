@@ -85,6 +85,20 @@ suspicious authenticated requests. It can restrict execution without expanding
 permissions. Provider-specific integrations and external PAP interoperability
 still require validation with those providers.
 
+## QUIC over voice
+
+The optional QUIC path reuses the audio modems, call adapters and authorization
+SDK, with QUIC providing packet loss recovery and mutually authenticated TLS 1.3.
+From this checkout:
+
+```sh
+python -m pip install -e '.[quic,webrtc,authority]'
+openavt sdk-demo --protocol quic --loss
+```
+
+This runs two independent processes with dropped, damaged and duplicated audio
+bursts. [QUIC integration, PAP, G.711 provider emulation and limits →](docs/quic.md)
+
 ## Sub-second handshakes
 
 Measured on an established local **64 kbps G.711 PCMU** audio call:
@@ -126,6 +140,7 @@ simulated exchange with explicit HTTPS confirmation.
 | Connect PAP sessions and voice authorization | [PAP adapter](docs/pap.md) |
 | Add voice detection and fraud monitoring | [Fraud adapters](docs/risk.md) |
 | Understand the transport | [Architecture](docs/architecture.md) |
+| Run QUIC over lossy audio | [QUIC over voice](docs/quic.md) |
 | Reproduce the timings | [Performance](docs/performance.md) |
 | Inspect tests and evidence | [Verification](docs/verification.md) |
 | Build and publish the package | [Releasing](docs/releasing.md) |

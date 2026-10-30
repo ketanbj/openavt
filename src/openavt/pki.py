@@ -25,6 +25,8 @@ def issue_certificates(directory: Path, rogue: bool) -> None:
             "EC",
             "-pkeyopt",
             "ec_paramgen_curve:P-256",
+            "-pkeyopt",
+            "ec_param_enc:named_curve",
             "-out",
             str(directory / f"{name}.key"),
         )
