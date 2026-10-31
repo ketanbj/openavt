@@ -82,3 +82,8 @@ validation is asserted in the manuscript.
 The public PAP specification now resolves to draft 0.3. The repository adapter
 targets its earlier draft 0.1 profile. The paper distinguishes those versions
 and does not claim current-draft conformance or external interoperability.
+
+The executable [authority continuity experiment](../docs/authority-experiment.md)
+compares TLS and QUIC with the same authorization policy and records handler
+effects during replay, reconnect, key changes and revocation. Its measurements
+are separate from the prospective evaluation in the compiled manuscript.
