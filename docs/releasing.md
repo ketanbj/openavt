@@ -5,11 +5,15 @@
 After successful `main` CI, [`release.yml`](../.github/workflows/release.yml)
 selects a version, tests and builds the package, publishes it to PyPI, then
 publishes a GitHub release with the same wheel and source archive.
-Publishing stays disabled until the one-time setup below is complete.
+Publication is controlled by the workflow configuration and its `RELEASE_ENABLED`
+gate. The setup below describes how to configure that gate; it is not a statement
+about the account's current settings. For local builds and checks, start with the
+[development guide](development.md#local-package-validation).
 
 ## Automatic versions
 
-The first release is **0.1.0**. Later releases use PR titles, descriptions,
+When no release exists, version selection starts at **0.1.0**. Later releases use
+PR titles, descriptions,
 commit messages and an optional PR label:
 
 | Change | PR title or commit | Optional override | From 0.1.3 |

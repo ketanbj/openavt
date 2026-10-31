@@ -1,0 +1,60 @@
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{iftex}
+% breakurl emits PostScript hooks that XeTeX does not support. Native hyperref
+% handles URLs on this engine; leave the vendored USENIX style unmodified.
+\ifXeTeX
+  \makeatletter
+  \@namedef{ver@breakurl.sty}{2026/10/30 Native XeTeX URL handling}
+  \makeatother
+\fi
+\usepackage{hyperref}
+\usepackage{usenix}
+\usepackage{xurl}
+\ifXeTeX
+  % XeTeX lacks these pdfTeX microtype features; retain normal font spacing.
+  \microtypesetup{spacing=false,kerning=false}
+\fi
+\usepackage{amsmath,amssymb,booktabs,tabularx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+\newcommand{\sys}{OpenAVT}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\todoexperiment}[1]{\textit{Planned: #1}}
+\input{artifacts/measurements}
+\title{OpenAVT: Binding Delegated Agent Authority to Voice Channels}
+\author{Anonymous Authors\\Research draft, October 30, 2026}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+Personal agents increasingly act through phone calls and other perceptual interfaces.
+A secure connection to an agent service does not, by itself, authorize a speaker
+heard on a different channel. Voice recognition can identify a familiar synthetic
+voice without establishing which customer delegated which action to its caller.
+We study how to carry authenticated, scoped machine requests through the same
+audio interface used for an interaction. \sys{} combines an audio modem, mutually
+authenticated TLS 1.3, and a gateway that checks customer grants outside the language
+model. Its QUIC variant replaces link-level reliable delivery with native QUIC
+recovery over unreliable audio datagrams. The prototype reuses voice-call adapters,
+certificate enrollment, delegated permissions, and an optional HTTPS agent-protocol
+bridge. Local experiments complete authorized and denied requests between separate
+processes over WebRTC and emulated G.711 provider audio, including deterministic
+loss and corruption. These results establish feasibility on controlled paths;
+they do not establish carrier compatibility, authenticated speech semantics, or
+physical proximity. We present the design, analyze its trust boundaries and
+limitations, and specify the comparative, adversarial, and acoustic evaluation
+needed to assess deployment.
+\end{abstract}
+\input{sections/introduction}
+\input{sections/model}
+\input{sections/alternatives}
+\input{sections/design}
+\input{sections/security}
+\input{sections/evaluation}
+\input{sections/related}
+\input{sections/discussion}
+\bibliographystyle{plainurl}
+\bibliography{references}
+\appendix
+\input{sections/appendix}
+\end{document}

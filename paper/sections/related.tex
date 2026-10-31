@@ -1,0 +1,52 @@
+\section{Related Work}
+\label{sec:related}
+\paragraph{Secure voice and media-path authentication.}
+ZRTP establishes key agreement in the media path for secure RTP, including
+short authentication strings and key continuity~\cite{rfc6189}. Krasnowski,
+Lebrun, and Martin study authenticated key exchange over voice-only channels,
+using signatures and short authentication strings with symbolic
+verification~\cite{voicekeys}. Their work is especially close evidence that
+cryptographic exchange through an audio domain is not itself new. Our different
+target is a participating software agent and business executor using registered
+keys and scoped customer authorization. We have not demonstrated the codec
+robustness or formal guarantees of that prior work, and human short-string
+verification is not our authentication mechanism.
+
+Classical modems establish the feasibility of transporting bits through
+telephone infrastructure; V.90 also illustrates how achievable rates depend
+on the digital/analog path~\cite{v90}. \sys{}'s exact-level PCM profile is a
+controlled digital-path experiment, not an implementation of V.90 or evidence
+that arbitrary modern speech codecs preserve such signaling. Its FSK profile
+is deliberately simple. A serious networking contribution needs to measure
+these adaptation constraints and compare appropriate coding and recovery
+baselines, rather than claim that wrapping a familiar transport is sufficient.
+
+\paragraph{Protected transports and delegation.}
+TLS 1.3 and QUIC supply established cryptographic transport and recovery
+machinery~\cite{rfc8446,rfc9000,rfc9001,rfc9002}. We reuse them rather than
+invent a cipher or key exchange. Macaroons show how context and attenuated
+delegation can be encoded in authorization credentials~\cite{macaroons}.
+OAuth certificate-bound tokens and DPoP demonstrate standardized possession
+binding~\cite{rfc8705,rfc9449}. \sys{} combines analogous separation of
+identity and permission with a concrete audio-carried endpoint. It does not
+claim its custom grants improve those standards cryptographically.
+
+PAP, A2A, and MCP provide complementary agent/application
+protocols~\cite{pap03,a2a,mcp}. Their scopes and evolving drafts matter when
+making an interoperability claim. The repository's PAP adapter is a local,
+custom extension of its earlier supported profile, and the current public
+PAP specification should not be characterized as omitting authentication,
+authorization, or prompt-injection considerations.
+
+\paragraph{Perceptual and prompt injection.}
+DolphinAttack exploits microphone nonlinearity to introduce inaudible voice
+commands, and Light Commands demonstrates optical injection into
+microphones~\cite{dolphin,lightcommands}. These are attacks on perceptual input,
+not cryptographic packet forgery. Indirect prompt injection exposes the risk
+of interpreting external data as instructions in tool-using
+applications~\cite{greshake}. AudioHijack studies auditory prompt injection
+against audio-language models~\cite{audiohijack}. \sys{} places an independent
+authorization gate on a subset of downstream effects. It does not stop
+perceptual injection or establish a general boundary between all data and
+instructions inside a model. The relevant comparison is which effects remain
+possible after manipulation, under explicitly matched tool permissions.

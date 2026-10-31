@@ -1,0 +1,69 @@
+\section{Problem, Threat Model, and Goals}
+\label{sec:model}
+\subsection{Deployment and principals}
+We consider a customer $U$, a personal agent $A$ with a private key, a business
+$B$, an audio path $M$, and an executor $E$ controlling business tools. An
+enrollment authority certifies an agent's registered account and public key.
+A separate business authorization service decides what $A$ may do for $U$.
+The audio path can traverse WebRTC endpoints, media gateways, and provider
+infrastructure. Each participating endpoint must be able to inject and decode
+modem samples. An unmodified human-only contact center does not acquire this
+capability merely because its caller adopts \sys{}.
+
+Enrollment proves the prototype's account/key-control relationship. It does not
+establish a legal identity, trustworthy software, an uncompromised model, or
+actual customer consent. Those properties depend on the operator's enrollment
+and user authentication procedures. Our local business examples simulate the
+customer's sign-in and consent and return a fixed order result.
+
+\subsection{Adversary and trusted components}
+The adversary may listen to, inject, replay, reorder, corrupt, delay, or suppress
+audio. It may control another caller, possess its own valid certificate, send
+malicious speech, or induce an agent model to propose an unwanted operation.
+It may steal an exposed bearer token, attempt cross-customer access, or use a
+grant after expiry or revocation. It may also cause a call to fail after a
+business effect but before its response arrives.
+
+We trust endpoint key storage, the selected trust roots, the grant issuer,
+the deterministic gateway, and the business handler's implementation of its
+schema and transaction semantics. A compromise of these components lies outside
+the protected-channel claim. The model is not trusted to enforce authorization.
+The audio provider is not trusted with inner application plaintext, although it
+can observe traffic characteristics and deny service. An endpoint that sees
+plaintext can disclose it; encryption does not constrain its subsequent use.
+
+We do not assume availability under jamming, authenticated real-world location,
+speaker liveness, distance bounds, secure handoff to a human, or that every
+spoken statement belongs to the authenticated endpoint. A live relay can
+forward an entire valid exchange. Modality carriage demonstrates a working
+end-to-end control path through audio, not physical co-presence.
+
+\subsection{Required properties}
+For an operation $r$ at the receiving gateway, the intended execution rule is
+\begin{align}
+\mathsf{Execute}(r) \Rightarrow {}& \mathsf{PeerVerified}(A,B) \nonumber\\
+ &\land\ \mathsf{SchemaValid}(r) \nonumber\\
+ &\land\ \mathsf{Delegated}(U,A,B,r) \nonumber\\
+ &\land\ \mathsf{FreshAndUnused}(r) \nonumber\\
+ &\land\ \mathsf{RiskAllows}(r).
+\label{eq:execution}
+\end{align}
+This is a design invariant conditional on the trusted components, not a
+mechanized proof of the implementation. Risk assessment can restrict access;
+it cannot enlarge a grant. Rejection or loss before verification must not
+produce an automatic downgrade to speech-based account access.
+
+We seek confidentiality and integrity for structured requests and responses,
+mutual endpoint authentication, permission checks independent of model output,
+and bounded processing of malformed or missing frames. Recovery must suppress
+transport duplicates while preserving uncertainty about application execution.
+The deployment should reuse existing audio adapters without requiring a parallel
+data channel. Where a business already offers an appropriately authenticated
+API, using that API may meet these goals with lower cost.
+
+The strongest binding in the prototype is in its optional HTTPS bridge: the
+grant covers a live challenge, the voice certificate, request identity, action,
+resource, customer, and argument digest. The standalone AVA policy instead
+authorizes a fixed read with no extra arguments and checks its challenge in the
+protected request. These profiles must not be described as equivalent forms of
+arbitrary operation authorization.

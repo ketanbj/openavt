@@ -1,0 +1,149 @@
+\section{Current Evidence and Evaluation Plan}
+\label{sec:evaluation}
+\subsection{Implemented artifact and local observations}
+The implementation baseline is commit \implementationcommit{} on the QUIC
+branch. It adds the packet/audio adaptation while reusing the existing modem,
+identity, gateway, AVA, PAP, risk, and provider components. The complete local
+Python regression suite reports \testcount{} passing tests. This count is not
+a claim of security coverage completeness or a substitute for measurements.
+The experiment inputs and sanitized reports are in
+\path{docs/quic-verification.json}; Table~\ref{tab:local} is generated directly
+from that file.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{llrr}
+\toprule
+Local audio route & Faults & Handshake (s) & $n$ \\
+\midrule
+\measurementrows
+\bottomrule
+\end{tabular}
+\caption{Observed caller authentication time, including the QUIC server's mutual-authentication confirmation; excludes enrollment and call setup. Each row is one local feasibility run, not a latency distribution. All rows complete one allowed and seven denied probes.}
+\label{tab:local}
+\end{table}
+
+All runs use separate caller and business Python processes on one macOS host
+(arm64, Python 3.13.7, aioquic 1.3.0, aiortc 1.15.0), with locally provisioned
+identities. WebRTC carries G.711 PCMU audio only. The provider-emulation route
+uses the Twilio adapter and local media/playback envelopes, without a carrier
+call. The lossy PCM runs drop two modem bursts, damage one, and duplicate one
+in each direction using fixed burst indices. Native QUIC records three
+packet losses at the caller and four at the business in those runs. Modem CRC
+failures confirm that corruption reached the receiver. These are specific
+waveform faults, not a claimed 1\% or 5\% network loss rate.
+
+Each SDK call allows an order read, then rejects scope escalation, replay,
+another customer, an expired grant, a revoked grant, another key, and a revoked
+certificate. Each business reports exactly one handler invocation and seven
+denials. The FSK run has no injected loss and completes the same probes; its
+single observed handshake is approximately 35.7 seconds. A separate lossy
+PAP/WebRTC run verifies a permitted read, an exchange proposal followed by
+one HTTPS-confirmed simulated effect, repeated confirmation/status recovery,
+fraud blocking, and denial after sign-out. It is a local reference service,
+not interoperability with an external PAP provider.
+
+Regression tests also cover streaming FSK samples, fragment reordering and
+duplicates, reassembly bounds and expiry, corrupted ciphertext with a valid
+audio CRC, large messages, malformed application input, ambiguous execution
+outcomes, negative certificates, and final ACK playback. We have not measured
+commercial detector accuracy, real-user approval, real telephone routes, or
+physical microphone operation. Historical repository TLS timings on another
+host and date are not treated as a controlled TLS-versus-QUIC comparison.
+
+\subsection{Research questions and baselines}
+The remaining evaluation is a prospective plan. We define six questions with
+outcomes that can falsify a deployment claim:
+\begin{enumerate}
+\item \textbf{Authorization:} Does the gateway prevent unauthorized effects when
+models encounter malicious speech, valid but insufficient credentials, replay,
+handoff, or permission changes? Count actual backend effects as well as response codes.
+\item \textbf{Transport:} Under which rates, losses, and delays does native QUIC
+improve completion time or reliability over the existing reliable-audio TLS profile?
+\item \textbf{Path compatibility:} Which real codec chains and processing settings
+support each modem, and where does the system reliably fail closed?
+\item \textbf{Deployment value:} When does in-audio control offer an advantage
+over an authenticated API or an HTTPS grant correlated with a call?
+\item \textbf{Conversation cost:} How much speech delay, interruption, audibility,
+and user confusion do modem bursts introduce?
+\item \textbf{Resource cost:} How do adversarial pre-authentication traffic,
+many calls, and stale partial packets affect CPU, memory, and availability?
+\end{enumerate}
+
+Transport baselines must use the same modem, certificates, payloads, call
+adapters, and host configuration: (a) current stop-and-wait TLS, (b) native
+QUIC, and (c) an improved reliable audio link with a window or selective repeat.
+The third baseline tests whether a benefit comes merely from replacing
+stop-and-wait. An authenticated HTTPS API supplies a deployment baseline;
+an HTTPS grant plus a securely specified call-binding mechanism supplies a
+cross-channel baseline. A raw unauthenticated speech interface is a negative
+control for authorization, not a competitive secure protocol.
+
+\subsection{Channel and performance experiments}
+Start with lossless sample loopback, local WebRTC, and provider emulation to
+locate errors before introducing uncontrolled routes. Then use consented
+endpoints across controlled Internet links, real provider calls, and finally
+microphone/speaker paths in a laboratory. Log codec negotiation and actual
+resampling, echo cancellation, automatic gain control, noise suppression,
+packetization, and jitter-buffer behavior. Test G.711, representative
+transcoding chains, Opus settings, clock mismatch, sample insertion/deletion,
+gain, noise, clipping, and speech overlap. A codec/profile combination that
+cannot decode should be reported as unsupported rather than excluded from
+the results silently.
+
+For digital impairments, sweep independently seeded packet loss at 0, 0.1, 1,
+3, 5, and 10\%, and include a burst-loss model with stated parameters. Sweep
+one-way network delay, jitter, reordering, and duplicate packets separately
+from waveform corruption and modem-fragment erasure. These fault units are
+not interchangeable. Use at least 100 fresh calls per selected condition
+initially, then increase sample sizes where tail estimates are unstable.
+With zero failures in 100 trials, a rough 95\% upper bound on failure
+probability is still about 3\%; do not interpret such a result as five-nines
+reliability. Report binomial intervals, medians and tail confidence intervals,
+timeouts, and all failed calls.
+
+Measure complete mutual-authentication time at \emph{both} endpoints, first
+authorized operation, transaction completion, airtime, useful goodput,
+retransmitted bytes, CPU, peak memory, and speech-queue delay. Separate call
+setup, enrollment, grant acquisition, handshake, application exchange, and
+LLM/speech times. Randomize baseline order and pair runs by impairment seed.
+Keep raw timings and wall-clock/software metadata. Sweep certificate-chain
+size, request/response size, audio frame size, initial RTT, and burst limits.
+Do not introduce resumption or 0-RTT into one baseline alone.
+
+\subsection{Adversarial and compositional experiments}
+Build an attack matrix for wrong roots, service names and purposes, missing
+certificates, invalid key proof, stolen grants under another certificate,
+concurrent grant use, stale nonces, argument substitution, revocation, and
+disconnects at every execution boundary. Exercise duplicate keys, multiple
+calls sharing an identity, partial authentication, attempted downgrade, live
+relay, and transfers between endpoints. Relays are expected to defeat a
+physical-presence interpretation; a correct evaluation should expose that
+limit rather than count successful authentication as relay prevention.
+
+For prompt injection, compare identical model tasks with and without gateway
+enforcement. Include in-scope malicious proposals, out-of-scope proposals,
+speech-only attempts, and responses that try to extract secrets or trigger
+another tool. Record model proposals, gateway decisions, real effects, and
+leaks through all enabled outputs. Fix and report the model version and prompts,
+and use repeated independent trials. A blocked financial write does not
+establish that the agent retained unrelated confidential information.
+
+Test failures during an asynchronous risk check and between revalidation and
+commit. Inject grant-service outages, risk-provider errors, and provider
+disconnects, checking bounded resource use and absence of silent fallback.
+Audit keys and tokens in logs, traces, model inputs, ASR output, and recordings.
+Fuzz fragment headers and authenticated application messages. A symbolic model
+of the grant/challenge state machine and an independent review of private
+aioquic hooks are planned work; neither is claimed complete here.
+
+\subsection{Users, operations, and decision criteria}
+Any user study should use informed consent and a clear transaction-approval
+interface. Measure whether participants understand the authenticated principal,
+the approved action, speech outside protection, and what happens on a transfer
+or timeout. Measure business integration effort and operator handling of
+unsupported calls. Publish the intervention and limitations, not just task
+completion. An operational recommendation requires both acceptable authorized
+completion on stated paths and reliable rejection under the attack matrix.
+If a conventional authenticated API achieves the required binding with less
+integration and user cost, the evaluation should recommend it.

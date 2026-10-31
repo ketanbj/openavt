@@ -1,0 +1,52 @@
+\section{Security Analysis and Residual Risks}
+\label{sec:security}
+\paragraph{Forged channel identity.}
+An injected or self-signed peer must pass configured certificate validation
+and prove key possession before the gateway obtains a verified identity.
+Hostname validation prevents accepting a different service under the same
+root. Tests exercise missing, expired, untrusted, wrong-purpose, and
+key-mismatched credentials. This evidence checks implementation paths; it
+does not quantify all possible authentication failures.
+
+\paragraph{Replay and token substitution.}
+QUIC packet protection and stream recovery handle protected transport bytes;
+the policy additionally checks unique grant IDs and live challenges. An
+intercepted grant bound to one certificate cannot simply be presented by an
+unrelated certified key. The PAP profile also binds exact arguments and checks
+current session permission. The standalone grant is intentionally narrower:
+it authorizes a fixed read, not a general signed command. Reusing one key
+across installations enlarges the compromise and cross-session attack surface.
+
+\paragraph{Speech and model manipulation.}
+An adversarial utterance may still influence either model. The protected
+gateway can deny a proposed action outside its grant, provided all effects
+are mediated there. It does not make transcripts trustworthy, prevent a
+model from revealing data through another tool, or stop an authorized but
+harmful in-scope action. A business employee who independently acts on speech
+is outside the gateway invariant. The evaluation must test these boundaries
+explicitly rather than report rejected schema probes as a general prompt
+injection defense.
+
+\paragraph{Relays, call correlation, and physical origin.}
+Fresh challenges prevent reuse of a stale control exchange but do not prevent
+an online adversary from forwarding a live one. A successful exchange
+authenticates the remote key across an audio path; it does not authenticate
+the route, speaker, physical location, or ownership of all concurrent speech.
+Binding to a trusted call identifier or transcript would require additional
+design and a careful relay threat model. Such bindings are not implemented.
+
+\paragraph{Denial of service and codec interference.}
+CRC, size checks, partial-packet expiry, queue limits, and deadlines bound
+several buffering paths. They do not defeat deliberate jamming or guarantee
+fair resource allocation before authentication. Traffic length and timing
+can expose activity patterns. Our prototype does not hide that modem traffic
+is present, provide traffic-analysis resistance, or certify safety for
+hearing aids and other acoustic equipment.
+
+\paragraph{Revocation and commit races.}
+The business must consult current grant/certificate state, not just accept a
+previously completed TLS handshake. The PAP revalidation hook reduces the
+window introduced by asynchronous risk assessment. An atomic relationship
+between the last authorization check and an external business effect still
+requires the business's transaction design. No protocol can turn an
+unacknowledged response into evidence that an operation did not happen.
