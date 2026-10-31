@@ -1,5 +1,6 @@
 """Install the core wheel in a clean environment and run outside the checkout."""
 
+import argparse
 import json
 import subprocess
 import tempfile
@@ -11,8 +12,8 @@ from pathlib import Path
 from openavt import __version__
 
 
-def main() -> None:
-    wheels = list(Path("dist").glob("*.whl"))
+def main(directory: Path = Path("dist")) -> None:
+    wheels = list(directory.glob("*.whl"))
     if len(wheels) != 1:
         raise SystemExit("Expected exactly one wheel in dist/")
     wheel = wheels[0].resolve()
@@ -22,7 +23,8 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="openavt-wheel-") as temporary:
         work = Path(temporary)
         environment = work / "venv"
-        venv.EnvBuilder(with_pip=True).create(environment)
+        # Match the POSIX venv CLI: copying managed Python can lose its dylib path.
+        venv.EnvBuilder(with_pip=True, symlinks=True).create(environment)
         python = environment / "bin/python"
         cli = environment / "bin/openavt"
         subprocess.run([str(python), "-m", "pip", "install", "--no-deps", str(wheel)], check=True)
@@ -98,4 +100,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--dist", type=Path, default=Path("dist"), help="directory containing the archive pair"
+    )
+    main(parser.parse_args().dist)

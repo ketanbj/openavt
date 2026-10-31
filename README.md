@@ -17,7 +17,10 @@ requests and signed customer permissions through the call's actual audio.
 Participating businesses check identity and permission before acting.
 
 **For business teams:** [the problem, value and adoption path](docs/business.md).
-**For developers:** [run the demo](#try-the-demo) or [explore the architecture](docs/architecture.md).
+**For developers:** [run the demo](#try-the-demo), [find the right guide](docs/README.md),
+or [locate the code](docs/code-map.md).
+**For contributors and coding agents:** [development setup](docs/development.md) ·
+[contributing](CONTRIBUTING.md) · [AGENTS.md](AGENTS.md).
 
 ## The trust gap
 
@@ -129,6 +132,10 @@ simulated exchange with explicit HTTPS confirmation.
 [Trust boundaries →](docs/authority.md#trust-boundaries)
 
 ## Documentation
+
+Use the [documentation map](docs/README.md) for task-based reading paths,
+`make help` for commands from a source checkout, and the
+[code map](docs/code-map.md) to distinguish library code, demos and measured artifacts.
 
 | Goal | Guide |
 | --- | --- |

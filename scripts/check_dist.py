@@ -1,5 +1,6 @@
 """Check release names, metadata, entry points, and absence of private artifacts."""
 
+import argparse
 import configparser
 import tarfile
 import tomllib
@@ -43,8 +44,7 @@ def check_metadata(raw: bytes, expected_extras: set[str]) -> None:
         raise SystemExit("Distribution README is missing the OpenAVT title")
 
 
-def main() -> None:
-    directory = Path("dist")
+def main(directory: Path = Path("dist")) -> None:
     wheels = list(directory.glob("*.whl"))
     sources = list(directory.glob("*.tar.gz"))
     if len(wheels) != 1 or len(sources) != 1:
@@ -81,4 +81,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--dist", type=Path, default=Path("dist"), help="directory containing the archive pair"
+    )
+    main(parser.parse_args().dist)

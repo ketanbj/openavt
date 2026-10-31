@@ -21,15 +21,14 @@ and Ethics/Open Science appendices.
   `../docs/quic-verification.json`; no synthetic measurements are generated.
 - `openavt.pdf`: compiled draft, supplied after visual inspection.
 
-With [Tectonic](https://tectonic-typesetting.github.io/) installed:
+From the repository root, with [Tectonic](https://tectonic-typesetting.github.io/) installed:
 
 ```sh
-cd paper
-make pdf
+make paper TECTONIC=/path/to/tectonic
 ```
 
 Tectonic downloads needed TeX packages on the first build and runs bibliography
-passes automatically. The output is `../output/pdf/main.pdf`. XeTeX/Tectonic lacks
+passes automatically. The output is `output/pdf/main.pdf` relative to the repository root. XeTeX/Tectonic lacks
 microtype's pdfTeX word-spacing and kerning features, so `main.tex` conditionally disables
 those unsupported features, without changing margins or shrinking type. For the official
 template's pdfTeX rendering, use the commands below. Under XeTeX the preamble also
@@ -69,6 +68,9 @@ rules, prepare a stable anonymous artifact deposit, and apply the venue's
 anonymity and AI-assistance disclosure policies. No submission number, reviewer
 artifact URL, real-user consent study, formal proof, or external-provider
 validation is asserted in the manuscript.
+
+See the [development guide](../docs/development.md#manuscript-and-generated-artifacts)
+for the distinction between a new build and the reviewed PDF/hash record.
 
 ## Evidence that remains to be collected
 

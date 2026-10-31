@@ -3,7 +3,7 @@ recursive-include docs *.md
 include docs/authority-verification.json docs/sdk-verification.json docs/pap-verification.json
 include docs/quic-verification.json
 recursive-include docs/performance *.json
-recursive-include tests *.py
+recursive-include tests *.py *.md
 prune output
 prune .venv
 prune .git
@@ -12,3 +12,9 @@ prune build
 prune dist
 global-exclude __pycache__ *.py[cod] .DS_Store .env *.key *.wav
 recursive-include scripts *.py
+
+include AGENTS.md CONTRIBUTING.md Makefile
+recursive-include docs/experiments *.json.gz
+recursive-include paper *.md *.tex *.bib *.sty *.pdf *.png *.json Makefile
+recursive-include paper/scripts *.py
+recursive-include .github/workflows *.yml

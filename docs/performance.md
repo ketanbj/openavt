@@ -37,7 +37,7 @@ uv run --locked --extra webrtc python scripts/benchmark_handshake.py \
 
 Use a new output path each time. The benchmark saves reports, recordings and
 `summary.json`. Linux CI runs the same threshold check and uploads its summary.
-The [complete enrollment demo](quickstart.md#start-with-enrollment-and-delegation)
+The [complete enrollment demo](quickstart.md#start-with-two-independent-sdk-peers)
 also runs the fast PCM profile.
 
 ## Timing and scope

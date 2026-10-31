@@ -2,9 +2,12 @@
 
 [README](../README.md) · [Performance](performance.md) · [Authority](authority.md)
 
-**155 automated tests passed locally** on macOS/Python 3.13 for the SDK and
-provider-adapter milestone. CI runs the same suite on Linux/Python 3.11,
-Linux/Python 3.13 and macOS/Python 3.13.
+This page records historical milestones and their evidence. For a new checkout,
+use its actual test output and exact-commit CI.
+
+The SDK/provider-adapter milestone recorded **155 automated tests passing locally**
+on macOS/Python 3.13. The current CI matrix runs the checked-out suite on
+Linux/Python 3.11, Linux/Python 3.13 and macOS/Python 3.13.
 
 The older [October 11 main CI run](https://github.com/ketanbj/openavt/actions/runs/38150046644)
 verified the preceding 75-test release; it does not attest to these new changes.
@@ -27,7 +30,7 @@ These are local results, separate from the historical TLS benchmarks below.
 | Five fresh PCM audio calls in CI | All full mTLS handshakes below one second | [Timings and environment](performance/pcm-ci-main.json) |
 | Two OpenAI agents with AVA | 0.623 s handshake; all eight authorization cases verified | [Public report](authority-verification.json) |
 | Fresh installed wheel, AVA without OpenAI | 0.582 s handshake; all eight cases verified locally | [Public report](authority-verification.json) |
-| Package checks | Builds, strict metadata validation and clean core-wheel installation | [Release checks](releasing.md#validate) |
+| Package checks | Builds, strict metadata validation and clean core-wheel installation | [Release checks](releasing.md#test-without-publishing) |
 
 CI also exercises the installed wheel over live WebRTC audio and runs the
 five-call handshake threshold. It also runs the SDK in independent processes over
@@ -51,10 +54,14 @@ separate opt-in local run using two independent GPT-6.1 Sol contexts.
 
 ## Run locally
 
+The counts above describe dated milestones. Use the current test output and
+exact-commit CI for the checkout being reviewed; do not treat a historical count
+as a live assertion. See the [development guide](development.md) for setup.
+
 ```sh
-uv run --locked --extra webrtc --extra authority --extra twilio pytest -q
-uv run --locked --extra webrtc --extra authority --extra twilio ruff check src tests scripts
-uv run --locked --extra webrtc --extra authority --extra twilio ruff format --check src tests scripts
+uv run --locked --all-extras pytest -q
+uv run --locked --all-extras ruff check src tests scripts
+uv run --locked --all-extras ruff format --check src tests scripts
 ```
 
 Use the [quickstart](quickstart.md) for calls and [performance guide](performance.md#reproduce)
